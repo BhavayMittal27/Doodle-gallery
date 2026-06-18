@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DoodlePort | Sketch Resume & Gallery</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- CSS Stylesheet -->
+  <script type="module" crossorigin src="./assets/index-2xwfM6xU.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CBzWqKO6.css">
+</head>
+<body class="theme-paper">
+
+  <!-- SVG Filters for Hand-drawn / Sketch Wobble Effect -->
+  <svg style="position: absolute; width: 0; height: 0; pointer-events: none;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="wobble-1">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+      <filter id="wobble-2">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="G" yChannelSelector="R" />
+      </filter>
+      <filter id="wobble-heavy">
+        <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Background Decorative Grid and Floating Doodles -->
+  <div class="bg-decorations">
+    <div class="floating-doodle doodle-1">★</div>
+    <div class="floating-doodle doodle-2">☀</div>
+    <div class="floating-doodle doodle-3">▲</div>
+    <div class="floating-doodle doodle-4">✿</div>
+  </div>
+
+  <!-- Main Navigation -->
+  <header class="app-header sketch-border">
+    <div class="header-container">
+      <a href="#" class="logo-area">
+        <span class="logo-icon">✎</span>
+        <span class="logo-text hand-drawn">DoodlePort</span>
+      </a>
+      
+      <nav class="main-nav">
+        <ul>
+          <li><a href="#hero" class="nav-link active">Home</a></li>
+          <li><a href="#studio" class="nav-link">Sketch Studio</a></li>
+          <li><a href="#gallery" class="nav-link">Gallery</a></li>
+          <li><a href="#resume" class="nav-link">Resume</a></li>
+          <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button id="theme-toggle" class="sketch-btn icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
+          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Scroll Container -->
+  <main class="content-container">
+
+    <!-- Hero / Landing Section -->
+    <section id="hero" class="hero-section page-section">
+      <div class="hero-content">
+        <div class="badge hand-drawn sketch-border">Welcome to my sketchpad</div>
+        <h1 class="hero-title">
+          Where <span class="highlight-text hand-drawn">Creativity</span> meets<br>
+          structured <span class="highlight-text hand-drawn">Development</span>.
+        </h1>
+        <p class="hero-desc">
+          I'm a developer who loves to sketch ideas. Explore my portfolio represented as doodles, draw your own on my canvas, and check out my interactive resume.
+        </p>
+        <div class="hero-buttons">
+          <a href="#studio" class="sketch-btn primary-btn hand-drawn">Start Doodling</a>
+          <a href="#gallery" class="sketch-btn secondary-btn hand-drawn">Explore Gallery</a>
+        </div>
+      </div>
+      
+      <!-- Interactive Hero Interactive Display -->
+      <div class="hero-showcase sketch-border">
+        <div class="showcase-header">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="showcase-title hand-drawn">QuickSketch.exe</span>
+        </div>
+        <div class="showcase-body">
+          <canvas id="hero-mini-canvas" width="400" height="300"></canvas>
+          <div class="canvas-instruction hand-drawn">Scratch here! Draw a quick smiley face ☺</div>
+          <button id="clear-hero-canvas" class="mini-clear-btn hand-drawn">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sketch Studio Section -->
+    <section id="studio" class="studio-section page-section">
+      <div class="section-header text-center">
+        <h2 class="section-title hand-drawn">The Sketch Studio</h2>
+        <p class="section-subtitle">Unleash your imagination. Draw anything, choose your tools, and save your masterpiece to the resume gallery!</p>
+      </div>
+
+      <div class="studio-grid">
+        <!-- Canvas Board Wrapper -->
+        <div class="canvas-board sketch-border-heavy">
+          <div class="notebook-rings">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="canvas-container">
+            <canvas id="paint-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Controls Panel -->
+        <div class="controls-panel sketch-border">
+          <h3 class="panel-title hand-drawn">Drawing Toolkit</h3>
+          
+          <!-- Tool Options -->
+          <div class="control-group">
+            <label class="control-label hand-drawn">Tool</label>
+            <div class="tool-selector">
+              <button class="tool-btn active" data-tool="brush" title="Brush">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M12 17v4M9 21h6"></path>
+                </svg>
+                <span class="tool-text hand-drawn">Brush</span>
+              </button>
+              <button class="tool-btn" data-tool="highlighter" title="Highlighter">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+                <span class="tool-text hand-drawn">Highlight</span>
+              </button>
+              <button class="tool-btn" data-tool="eraser" title="Eraser">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 20H7L3 16c-1-1-1-3 0-4l9-9c1-1 3-1 4 0l4 4c1 1 1 3 0 4L13 20"></path>
+                  <line x1="18" y1="12" x2="22" y2="16"></line>
+                </svg>
+                <span class="tool-text hand-drawn">Eraser</span>
+              </button>
+            </div>
+            <div class="shape-selector">
+              <button class="shape-btn" data-shape="free" title="Freehand">✎ Free</button>
+              <button class="shape-btn" data-shape="line" title="Line">╱ Line</button>
+              <button class="shape-btn" data-shape="rect" title="Rectangle">☐ Rect</button>
+              <button class="shape-btn" data-shape="circle" title="Circle">◯ Circle</button>
+            </div>
+          </div>
+
+          <!-- Color Swatches -->
+          <div class="control-group">
+            <label class="control-label hand-drawn">Colors</label>
+            <div class="color-palette" id="color-palette">
+              <!-- Dynamically populated in JavaScript, custom custom drawing style -->
+            </div>
+            <div class="custom-color-picker">
+              <input type="color" id="custom-color" value="#000000">
+              <label for="custom-color" class="hand-drawn">Custom Color</label>
+            </div>
+          </div>
+
+          <!-- Brush Size & Opacity -->
+          <div class="control-group">
+            <div class="slider-label">
+              <span class="hand-drawn">Brush Size</span>
+              <span id="brush-size-val" class="hand-drawn">6px</span>
+            </div>
+            <input type="range" id="brush-size" min="1" max="50" value="6" class="sketch-slider">
+          </div>
+
+          <div class="control-group">
+            <div class="slider-label">
+              <span class="hand-drawn">Opacity</span>
+              <span id="brush-opacity-val" class="hand-drawn">100%</span>
+            </div>
+            <input type="range" id="brush-opacity" min="10" max="100" value="100" class="sketch-slider">
+          </div>
+
+          <!-- History / Actions -->
+          <div class="control-group action-group">
+            <button id="undo-btn" class="sketch-btn secondary-btn flex-btn" title="Undo (Ctrl+Z)">
+              <span>↩</span> <span class="hand-drawn">Undo</span>
+            </button>
+            <button id="redo-btn" class="sketch-btn secondary-btn flex-btn" title="Redo (Ctrl+Y)">
+              <span>↪</span> <span class="hand-drawn">Redo</span>
+            </button>
+            <button id="clear-btn" class="sketch-btn danger-btn flex-btn" title="Clear Canvas">
+              <span>🗑</span> <span class="hand-drawn">Clear</span>
+            </button>
+          </div>
+
+          <!-- Save and Download -->
+          <div class="save-actions sketch-border-top">
+            <input type="text" id="doodle-title" class="sketch-input hand-drawn" placeholder="Name your sketch..." maxlength="25">
+            <button id="save-gallery-btn" class="sketch-btn primary-btn full-btn hand-drawn">
+              <span>✈</span> Post to Gallery
+            </button>
+            <button id="download-btn" class="sketch-btn secondary-btn full-btn hand-drawn">
+              <span>↓</span> Save PNG
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery-section page-section">
+      <div class="section-header text-center">
+        <h2 class="section-title hand-drawn">The Doodle Gallery</h2>
+        <p class="section-subtitle">Browse through visual stories of my software engineering projects, sketches, and guest creations.</p>
+      </div>
+
+      <!-- Filters & Search Toolbar -->
+      <div class="gallery-toolbar sketch-border">
+        <div class="filter-categories" id="filter-categories">
+          <button class="filter-btn active hand-drawn" data-filter="all">All Sketches</button>
+          <button class="filter-btn hand-drawn" data-filter="portfolio">My Projects</button>
+          <button class="filter-btn hand-drawn" data-filter="user">User Doodles</button>
+        </div>
+        <div class="search-box">
+          <input type="text" id="gallery-search" class="sketch-input hand-drawn" placeholder="🔍 Search sketches...">
+        </div>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div class="gallery-grid" id="gallery-grid">
+        <!-- Dynamically rendered via app.js -->
+      </div>
+    </section>
+
+    <!-- Resume Section -->
+    <section id="resume" class="resume-section page-section">
+      <div class="section-header text-center">
+        <h2 class="section-title hand-drawn">Sketchbook Resume</h2>
+        <p class="section-subtitle">Flip through the pages of my background, technical skillsets, and professional experience.</p>
+      </div>
+
+      <!-- Resume Canvas Book -->
+      <div class="resume-book sketch-border-heavy">
+        <div class="resume-tabs">
+          <button class="resume-tab active hand-drawn" data-tab="profile">
+            <span>☺</span> Profile
+          </button>
+          <button class="resume-tab hand-drawn" data-tab="skills">
+            <span>⚙</span> Skills
+          </button>
+          <button class="resume-tab hand-drawn" data-tab="experience">
+            <span>☍</span> Experience
+          </button>
+        </div>
+
+        <div class="resume-page-content" id="resume-tab-content">
+          <!-- Dynamically populated in app.js based on selection. Included structures below for reference and fallback -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section page-section">
+      <div class="section-header text-center">
+        <h2 class="section-title hand-drawn">Leave a Scribble</h2>
+        <p class="section-subtitle">Have a project idea or just want to connect? Send a message and let's work together!</p>
+      </div>
+
+      <div class="contact-container sketch-border">
+        <div class="contact-info">
+          <h3 class="hand-drawn">Let's Connect!</h3>
+          <p>If you prefer standard communication channels, feel free to use the links below or scribble your message on the notepad.</p>
+          <div class="contact-links">
+            <a href="mailto:developer@example.com" class="sketch-btn secondary-btn hand-drawn flex-btn">
+              <span>✉</span> developer@example.com
+            </a>
+            <a href="https://github.com" target="_blank" class="sketch-btn secondary-btn hand-drawn flex-btn">
+              <span>★</span> GitHub Profile
+            </a>
+            <a href="https://linkedin.com" target="_blank" class="sketch-btn secondary-btn hand-drawn flex-btn">
+              <span>☍</span> LinkedIn Profile
+            </a>
+          </div>
+          <div class="paper-sketch-decoration">
+            <!-- Drawn dynamically or CSS background -->
+            <div class="cup-doodle">☕</div>
+            <div class="quote-doodle hand-drawn">"Lines form ideas, ideas build software."</div>
+          </div>
+        </div>
+
+        <form id="contact-form" class="contact-form-pad">
+          <div class="form-group">
+            <label for="contact-name" class="hand-drawn">Your Name</label>
+            <input type="text" id="contact-name" class="sketch-input hand-drawn" required placeholder="e.g. Ada Lovelace">
+          </div>
+          <div class="form-group">
+            <label for="contact-email" class="hand-drawn">Your Email</label>
+            <input type="email" id="contact-email" class="sketch-input hand-drawn" required placeholder="e.g. ada@computing.com">
+          </div>
+          <div class="form-group">
+            <label for="contact-msg" class="hand-drawn">Scribble Message</label>
+            <textarea id="contact-msg" class="sketch-input hand-drawn" rows="5" required placeholder="Type your scribble here..."></textarea>
+          </div>
+          <button type="submit" class="sketch-btn primary-btn hand-drawn full-btn">
+            Send Scribble ✈
+          </button>
+          <div id="form-status" class="hand-drawn text-center form-status-msg"></div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Lightbox Modal for Gallery Doodles -->
+  <div class="lightbox-modal" id="doodle-lightbox">
+    <div class="lightbox-overlay" id="lightbox-close-overlay"></div>
+    <div class="lightbox-container sketch-border">
+      <button class="close-lightbox" id="close-lightbox-btn" aria-label="Close modal">&times;</button>
+      <div class="lightbox-grid">
+        <div class="lightbox-image-wrapper sketch-border">
+          <div id="lightbox-media-container">
+            <!-- Image or SVG will be injected here -->
+          </div>
+        </div>
+        <div class="lightbox-details">
+          <div class="lightbox-header">
+            <span class="lightbox-tag hand-drawn" id="lightbox-tag">Tag</span>
+            <h3 class="lightbox-title hand-drawn" id="lightbox-title">Doodle Title</h3>
+            <div class="lightbox-meta">
+              <span id="lightbox-author">By Creator</span> &bull; <span id="lightbox-date">June 18, 2026</span>
+            </div>
+          </div>
+          <div class="lightbox-body">
+            <p id="lightbox-description">This is a description of the doodle showcase project.</p>
+            
+            <div class="tech-tags-list" id="lightbox-tech-tags">
+              <!-- Technical tags in hand-drawn bubbles -->
+            </div>
+          </div>
+          <div class="lightbox-footer">
+            <a id="lightbox-download" href="#" download="doodle.png" class="sketch-btn primary-btn hand-drawn flex-btn">
+              <span>↓</span> Download Image
+            </a>
+            <button id="lightbox-like" class="sketch-btn secondary-btn hand-drawn flex-btn">
+              <span>♥</span> Like (<span id="like-count">0</span>)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="app-footer text-center">
+    <p class="hand-drawn">Made with ☕, ✎, and HTML5 Canvas &bull; &copy; 2026 DoodlePort</p>
+  </footer>
+
+  <!-- Scripts -->
+</body>
+</html>
