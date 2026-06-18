@@ -3,7 +3,8 @@
 An interactive web application built with a premium hand-drawn "doodle" aesthetic. This project showcases a developer portfolio, interactive drawing canvases, and technical skill timeline roads, blending layout wireframes with front-end animations.
 
 ## 🎨 Live Demo & Preview
-- **Local Server:** `http://localhost:5173/`
+- **Live Website:** [DoodlePort Portfolio](https://BhavayMittal27.github.io/Doodle-gallery/)
+- **Local Dev Server:** `http://localhost:5173/`
 - **Dual Themes:** Swap between **Warm Sketchbook Paper** (light) and **Slate Chalkboard** (dark) styles dynamically.
 
 ---
