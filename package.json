@@ -1,0 +1,27 @@
+{
+  "name": "doodle-gallery-resume",
+  "version": "1.0.0",
+  "description": "A high-end, responsive Doodle Gallery & Sketch Resume Portfolio project.",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "keywords": [
+    "doodle",
+    "gallery",
+    "resume",
+    "portfolio",
+    "canvas",
+    "sketch"
+  ],
+  "author": "Bhavay",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^6.3.0",
+    "vite": "^5.2.0"
+  }
+}
