@@ -59,11 +59,11 @@ class SketchCanvas {
     // Scale for high-res retina screens
     const dpr = window.devicePixelRatio || 1;
     this.canvas.width = rect.width * dpr;
-    this.canvas.height = (this.isMini ? 220 : 500) * dpr;
+    this.canvas.height = rect.width * dpr;
     this.ctx.scale(dpr, dpr);
     
     this.canvas.style.width = '100%';
-    this.canvas.style.height = this.isMini ? '220px' : '500px';
+    this.canvas.style.height = '100%';
 
     // Set brush settings for the scaled context
     this.ctx.lineCap = 'round';

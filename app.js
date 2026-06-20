@@ -9,9 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let doodlesList = [...PORTFOLIO_DOODLES]; // Combines preloaded & database doodles
   let currentFilter = 'all';
   
-  // Canvas Instantiations
+  // Canvas Instantiation
   const mainCanvas = new SketchCanvas('paint-canvas');
-  const heroCanvas = new SketchCanvas('hero-mini-canvas', true);
 
   // --- PALETTE DEFINITIONS (Celestial Neon Colors) ---
   const CELESTIAL_PALETTE = [
@@ -30,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
     setupColorPalette();
     setupCanvasControls();
-    setupSkyMapPanning();
+    setupMobileDrawer();
     renderCelestialSky();
     setupGalleryFilters();
     setupResumeTabs();
@@ -150,11 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Forge wiped clean!', 'info');
     });
 
-    document.getElementById('clear-hero-canvas').addEventListener('click', () => {
-      heroCanvas.clear();
-      showToast('Scratchpad wiped!', 'info');
-    });
-
     // Download PNG
     document.getElementById('download-btn').addEventListener('click', () => {
       const dataUrl = mainCanvas.getMergedDataURL(true); // always dark celestial backdrop
@@ -165,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Constellation chart downloaded!', 'success');
     });
 
-    // Save/Post to Constellation Sky
+    // Save/Post to Constellation Garden Island
     document.getElementById('save-gallery-btn').addEventListener('click', async () => {
       const titleInput = document.getElementById('doodle-title');
       const title = titleInput.value.trim() || 'Unnamed Star';
@@ -189,24 +183,24 @@ document.addEventListener('DOMContentLoaded', () => {
           const path = `public/${filename}`;
           
           const { error: uploadError } = await supabase.storage
-            .from('drawings')
-            .upload(path, blob, { contentType: 'image/png', upsert: false });
-            
+             .from('drawings')
+             .upload(path, blob, { contentType: 'image/png', upsert: false });
+             
           if (uploadError) throw uploadError;
           
           const { error: insertError } = await supabase
-            .from('drawings')
-            .insert([{ path, caption: title, flagged: false }]);
-            
+             .from('drawings')
+             .insert([{ path, caption: title, flagged: false }]);
+             
           if (insertError) throw insertError;
           
           const { data: publicData } = supabase.storage
-            .from('drawings')
-            .getPublicUrl(path);
-            
+             .from('drawings')
+             .getPublicUrl(path);
+             
           imageSrc = publicData.publicUrl;
           
-          showToast(`Successfully birthed "${title}" in the night sky!`, 'success');
+          showToast(`Successfully birthed "${title}" in the garden!`, 'success');
         } catch (err) {
           console.error("Supabase stargaze upload failed, saving locally:", err);
           showToast("Failed to beam online. Saved in local session.", "danger");
@@ -215,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
           saveBtn.innerHTML = originalText;
         }
       } else {
-        showToast(`Successfully birthed "${title}" in local viewport!`, 'success');
+        showToast(`Successfully birthed "${title}" in local session!`, 'success');
       }
 
       const newDoodle = {
@@ -227,11 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
         likes: 0,
         author: 'Guest Astronomer',
         description: supabase 
-          ? 'A user-forged constellation stored persistently in our Supabase space catalog.' 
-          : 'A custom, interactive constellation saved locally in active session coordinates.',
+           ? 'A user-forged constellation stored persistently in our Supabase space catalog.' 
+           : 'A custom, interactive constellation saved locally in active session coordinates.',
         techTags: supabase 
-          ? ['Supabase DB', 'Supabase Storage', 'Canvas API']
-          : ['Canvas API', 'Telemetry Saved'],
+           ? ['Supabase DB', 'Supabase Storage', 'Canvas API']
+           : ['Canvas API', 'Telemetry Saved'],
         imageSrc: imageSrc
       };
 
@@ -243,134 +237,47 @@ document.addEventListener('DOMContentLoaded', () => {
       titleInput.value = '';
       mainCanvas.clear();
 
-      // Scroll to sky and center viewport on new star!
-      document.getElementById('sky').scrollIntoView({ behavior: 'smooth' });
+      // Close mobile drawer if active
+      const drawer = document.getElementById('forge-panel');
+      if (drawer) {
+        drawer.classList.remove('active');
+      }
+
+      // Scroll to garden
+      document.getElementById('garden').scrollIntoView({ behavior: 'smooth' });
       
-      // Smoothly pan to the coordinates of this newly created star node
+      // Pulse the new star
       setTimeout(() => {
         focusViewportOnStar(newId);
-      }, 800);
+      }, 500);
     });
   }
 
-  // --- INTERACTIVE SKY MAP PANNING LOGIC ---
-  let isPanning = false;
-  let startX = 0, startY = 0;
-  let scrollX = 0, scrollY = 0;
-
-  function setupSkyMapPanning() {
-    const viewport = document.getElementById('sky-map-viewport');
-    const container = document.getElementById('sky-map-container');
-    if (!viewport || !container) return;
-
-    // Center the container inside the viewport on load
-    const centerContainer = () => {
-      const vRect = viewport.getBoundingClientRect();
-      scrollX = -((2400 - vRect.width) / 2);
-      scrollY = -((2400 - vRect.height) / 2);
-      container.style.transform = `translate(${scrollX}px, ${scrollY}px)`;
-    };
+  // --- MOBILE DRAWER TOGGLING ---
+  function setupMobileDrawer() {
+    const drawer = document.getElementById('forge-panel');
+    const openBtn = document.getElementById('mobile-draw-btn');
+    const closeBtn = document.getElementById('close-drawer-btn');
     
-    // Initial centering
-    centerContainer();
-    window.addEventListener('resize', centerContainer);
-
-    // Mouse Panning
-    viewport.addEventListener('mousedown', (e) => {
-      // Don't pan if clicking interactive star nodes or buttons
-      if (e.target.closest('.constellation-node') || e.target.closest('.filter-btn') || e.target.closest('#gallery-search')) return;
-      
-      isPanning = true;
-      viewport.classList.add('dragging');
-      startX = e.clientX - scrollX;
-      startY = e.clientY - scrollY;
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isPanning) return;
-      
-      let x = e.clientX - startX;
-      let y = e.clientY - startY;
-
-      // Clamp limits to prevent dragging map completely off screen
-      const vRect = viewport.getBoundingClientRect();
-      const minX = vRect.width - 2400;
-      const minY = vRect.height - 2400;
-
-      scrollX = Math.max(minX, Math.min(0, x));
-      scrollY = Math.max(minY, Math.min(0, y));
-
-      container.style.transform = `translate(${scrollX}px, ${scrollY}px)`;
-    });
-
-    window.addEventListener('mouseup', () => {
-      isPanning = false;
-      viewport.classList.remove('dragging');
-    });
-
-    // Touch Panning for tablets/mobile
-    viewport.addEventListener('touchstart', (e) => {
-      if (e.target.closest('.constellation-node') || e.target.closest('.filter-btn')) return;
-      
-      isPanning = true;
-      const touch = e.touches[0];
-      startX = touch.clientX - scrollX;
-      startY = touch.clientY - scrollY;
-    });
-
-    viewport.addEventListener('touchmove', (e) => {
-      if (!isPanning) return;
-      const touch = e.touches[0];
-      
-      let x = touch.clientX - startX;
-      let y = touch.clientY - startY;
-
-      const vRect = viewport.getBoundingClientRect();
-      const minX = vRect.width - 2400;
-      const minY = vRect.height - 2400;
-
-      scrollX = Math.max(minX, Math.min(0, x));
-      scrollY = Math.max(minY, Math.min(0, y));
-
-      container.style.transform = `translate(${scrollX}px, ${scrollY}px)`;
-    });
-
-    viewport.addEventListener('touchend', () => {
-      isPanning = false;
-    });
+    if (!drawer) return;
+    
+    if (openBtn) {
+      openBtn.addEventListener('click', () => {
+        drawer.classList.add('active');
+      });
+    }
+    
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        drawer.classList.remove('active');
+      });
+    }
   }
 
-  // Focuses and centers the viewport on a specific star node
+  // Pulses a newly created star node
   function focusViewportOnStar(starId) {
     const node = document.querySelector(`[data-star-id="${starId}"]`);
-    const viewport = document.getElementById('sky-map-viewport');
-    const container = document.getElementById('sky-map-container');
-    if (!node || !viewport || !container) return;
-
-    // Get star coordinates
-    const starX = parseFloat(node.style.left);
-    const starY = parseFloat(node.style.top);
-
-    const vRect = viewport.getBoundingClientRect();
-    
-    // Calculate required translate to place target star exactly in the center of the viewport
-    let targetX = -(starX - vRect.width / 2);
-    let targetY = -(starY - vRect.height / 2);
-
-    // Clamp coordinates
-    const minX = vRect.width - 2400;
-    const minY = vRect.height - 2400;
-    scrollX = Math.max(minX, Math.min(0, targetX));
-    scrollY = Math.max(minY, Math.min(0, targetY));
-
-    // Animate smoothly via CSS transition
-    container.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
-    container.style.transform = `translate(${scrollX}px, ${scrollY}px)`;
-
-    // Remove transition after animation finishes so drag panning remains responsive
-    setTimeout(() => {
-      container.style.transition = '';
-    }, 800);
+    if (!node) return;
 
     // Briefly trigger starlight pulse ring to identify the node
     const pulseRing = node.querySelector('.star-pulse-ring');
@@ -382,23 +289,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- STAR POSITIONING & RENDERING ---
-  // Generates deterministic pseudo-random coordinates centering clusters around the galaxy middle
+  // --- STAR POSITIONING & RENDERING ON ISLAND ---
+  // Generates deterministic coordinates relative to the island surface bounds
   function getCoordinatesForId(id) {
     let hash = 0;
     for (let i = 0; i < id.length; i++) {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
     
-    // Concentric galactic spiral shape coordinates distribution
-    const angle = (Math.abs(hash) % 360) * (Math.PI / 180);
-    const radius = 180 + (Math.abs(hash * 37) % 850); // radii between 180px and 1030px from center
+    // Deterministic X percentage between 18% and 82%
+    const x = 18 + (Math.abs(hash) % 65);
     
-    // Central point is (1200, 1200) inside the 2400x2400 canvas map
-    const x = 1200 + Math.cos(angle) * radius;
-    const y = 1200 + Math.sin(angle) * radius;
+    // Deterministic Y percentage between 20% and 72%
+    const y = 20 + (Math.abs(hash * 37) % 53);
     
-    return { x: Math.round(x), y: Math.round(y) };
+    return { x, y };
   }
 
   function renderCelestialSky() {
