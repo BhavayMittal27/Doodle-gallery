@@ -4,3 +4,6 @@ dist
 *.log
 .system_generated
 .agents
+.vercel
+.env
+

@@ -2,6 +2,8 @@
    MAIN APPLICATION CONTROLLER (app.js)
    ========================================================================== */
 
+import { supabase } from './supabase.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   // --- STATE MANAGEMENT ---
   let doodlesList = [...PORTFOLIO_DOODLES]; // Combines preloaded & user doodles
@@ -45,6 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setupResumeTabs();
     setupContactForm();
     setupFloatingDoodlesInteraction();
+
+    // Fetch doodles from Supabase in background
+    fetchSupabaseDoodles();
   }
 
   // --- THEME MANAGEMENT ---
@@ -233,26 +238,80 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Save/Post to Gallery Action
-    document.getElementById('save-gallery-btn').addEventListener('click', () => {
+    document.getElementById('save-gallery-btn').addEventListener('click', async () => {
       const titleInput = document.getElementById('doodle-title');
       const title = titleInput.value.trim() || 'Untitled Doodle';
       const isDarkMode = (activeTheme === 'chalkboard');
       
+      const saveBtn = document.getElementById('save-gallery-btn');
+      const originalText = saveBtn.innerHTML;
+      
       // Get the image merged with notebook paper or chalkboard texture
       const mergedImgData = mainCanvas.getMergedDataURL(isDarkMode);
+      let imageSrc = mergedImgData;
+
+      // Check if Supabase is active
+      if (supabase) {
+        try {
+          saveBtn.disabled = true;
+          saveBtn.innerHTML = `<span>⏳</span> Uploading...`;
+          
+          // 1. Convert DataURL to Blob
+          const blob = dataURLtoBlob(mergedImgData);
+          
+          // 2. Generate unique filename
+          const filename = `${Date.now()}-${crypto.randomUUID()}.png`;
+          const path = `public/${filename}`;
+          
+          // 3. Upload to Supabase Storage drawings bucket
+          const { error: uploadError } = await supabase.storage
+            .from('drawings')
+            .upload(path, blob, { contentType: 'image/png', upsert: false });
+            
+          if (uploadError) throw uploadError;
+          
+          // 4. Insert Metadata into drawings table
+          const { error: insertError } = await supabase
+            .from('drawings')
+            .insert([{ path, caption: title, flagged: false }]);
+            
+          if (insertError) throw insertError;
+          
+          // 5. Get Public URL
+          const { data: publicData } = supabase.storage
+            .from('drawings')
+            .getPublicUrl(path);
+            
+          imageSrc = publicData.publicUrl;
+          
+          showToast(`Successfully posted "${title}" to the database!`, 'success');
+        } catch (err) {
+          console.error("Supabase upload failed, saving locally:", err);
+          showToast("Failed to sync database. Saved locally.", "danger");
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
+        }
+      } else {
+        showToast(`Successfully posted "${title}" to local gallery!`, 'success');
+      }
 
       // Create new user doodle
       const newDoodle = {
         id: `user-doodle-${Date.now()}`,
         title: title,
         category: 'user',
-        tag: 'Guest Sketch',
+        tag: supabase ? 'Supabase Sketch' : 'Guest Sketch',
         date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         likes: 0,
         author: 'Guest Designer',
-        description: 'A custom, interactive drawing painted live on the canvas within the Sketch Studio. Saved in local session memory.',
-        techTags: ['Canvas API', 'Mouse/Touch', 'Session Saved'],
-        imageSrc: mergedImgData
+        description: supabase 
+          ? 'A custom drawing saved in the Supabase PostgreSQL database and loaded in real-time.' 
+          : 'A custom, interactive drawing painted live on the canvas within the Sketch Studio. Saved in local session memory.',
+        techTags: supabase 
+          ? ['Supabase DB', 'Supabase Storage', 'Canvas API']
+          : ['Canvas API', 'Mouse/Touch', 'Session Saved'],
+        imageSrc: imageSrc
       };
 
       // Add to list and re-render
@@ -263,8 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
       titleInput.value = '';
       mainCanvas.clear();
 
-      showToast(`Successfully posted "${title}" to the gallery!`, 'success');
-      
       // Scroll to gallery section smoothly
       document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
     });
@@ -643,5 +700,58 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.remove();
       }, 300);
     }, 3000);
+  }
+
+  // --- SUPABASE DATA UTILITIES ---
+  function dataURLtoBlob(dataurl) {
+    const arr = dataurl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+  }
+
+  async function fetchSupabaseDoodles() {
+    if (!supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('drawings')
+        .select('path, caption, flagged, created_at')
+        .order('created_at', { ascending: false })
+        .limit(40);
+        
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        const dbDoodles = data.map((row, index) => {
+          const { data: publicData } = supabase.storage.from('drawings').getPublicUrl(row.path);
+          return {
+            id: `db-doodle-${row.path.replace(/\//g, '_')}-${index}`,
+            title: row.caption || 'Untitled Sketch',
+            category: 'user',
+            tag: 'Supabase Sketch',
+            date: row.created_at
+              ? new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(new Date(row.created_at))
+              : "Recent",
+            likes: Math.floor(Math.random() * 20) + 5, // Random baseline likes
+            author: 'Guest Artist',
+            description: 'A doodle stored persistently in the Supabase PostgreSQL database and loaded in real-time.',
+            techTags: ['Supabase DB', 'Supabase Storage', 'Canvas API'],
+            imageSrc: publicData.publicUrl
+          };
+        });
+        
+        // Merge Supabase doodles behind the preloaded portfolio items
+        doodlesList = [...PORTFOLIO_DOODLES, ...dbDoodles];
+        renderGallery();
+        showToast("Loaded drawings from Supabase database!", "info");
+      }
+    } catch (err) {
+      console.warn("Could not load drawings from Supabase database:", err);
+    }
   }
 });
