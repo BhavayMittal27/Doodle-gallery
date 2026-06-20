@@ -1064,381 +1064,110 @@ a {
   background-color: var(--bg-card);
 }
 
-.resume-page-content {
-  min-height: 400px;
-  transition: opacity var(--transition-normal);
-}
-
-/* Profile Tab Grid */
-.profile-grid {
+/* --- STAR GALLERY ARCHIVE GRID --- */
+.archive-grid {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 2rem;
-  align-items: center;
+  margin-top: 1.5rem;
 }
 
-.profile-avatar-box {
-  background-color: var(--bg-canvas);
-  border: 2px solid var(--border-color);
-  padding: 1.5rem;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: var(--space-glow);
-}
-
-.profile-avatar-box svg {
-  max-width: 100%;
-  height: auto;
-  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.25));
-}
-
-.profile-details h3 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
-}
-
-.profile-title {
-  color: var(--ink-secondary);
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1.2rem;
-}
-
-.profile-bio {
-  color: var(--text-muted);
-  margin-bottom: 1.5rem;
-  font-size: 1.05rem;
-}
-
-.profile-quick-facts {
-  list-style: none;
-}
-
-.profile-quick-facts li {
-  margin-bottom: 0.6rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.profile-quick-facts li span.bullet {
-  color: var(--ink-secondary);
-  font-size: 1.1rem;
-}
-
-/* Orbiting Planetary Skills Section */
-.orbit-universe {
-  position: relative;
-  width: 100%;
-  height: 480px;
-  background-color: var(--bg-canvas);
-  border: 1.5px solid var(--border-color);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-}
-
-/* Core developer sun */
-.orbit-core-sun {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80px;
-  height: 80px;
-  background: radial-gradient(circle, #ffffff 0%, var(--ink-highlight) 50%, var(--ink-primary) 100%);
-  border-radius: 50%;
-  box-shadow: 0 0 30px var(--ink-highlight), 0 0 50px var(--ink-primary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  text-align: center;
-  cursor: help;
-}
-
-.orbit-core-sun span.sun-label {
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: var(--ink-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Orbit rings */
-.orbit-path-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border: 1px dashed rgba(0, 229, 255, 0.08);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.ring-1 { width: 180px; height: 180px; }
-.ring-2 { width: 280px; height: 280px; }
-.ring-3 { width: 380px; height: 380px; }
-
-/* Rotating planets container */
-.orbit-rotator {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  animation: rotate-orbit linear infinite;
-  transform-origin: 50% 50%;
-  pointer-events: none;
-}
-
-@keyframes rotate-orbit {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.orbit-rotator.speed-fast { animation-duration: 18s; }
-.orbit-rotator.speed-medium { animation-duration: 28s; }
-.orbit-rotator.speed-slow { animation-duration: 40s; }
-
-/* Planets */
-.orbit-planet-node {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: auto; /* Enable hover/clicks on nodes */
-  cursor: pointer;
-}
-
-/* Offsets to place planet on orbit ring */
-/* R1: 90px radius */
-.planet-js { transform: translate(65px, -65px); }       /* JS (92%) */
-.planet-canvas { transform: translate(-90px, 0px); }    /* Canvas (88%) */
-/* R2: 140px radius */
-.planet-react { transform: translate(0px, 140px); }     /* React (85%) */
-.planet-css { transform: translate(-100px, -100px); }   /* CSS (95%) */
-.planet-node { transform: translate(130px, 50px); }     /* Node (80%) */
-/* R3: 190px radius */
-.planet-db { transform: translate(-130px, 130px); }     /* DB (75%) */
-.planet-api { transform: translate(175px, -75px); }     /* API (84%) */
-.planet-git { transform: translate(-10px, -190px); }    /* Git (82%) */
-
-.planet-sphere {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: var(--ink-secondary);
-  box-shadow: 0 0 10px var(--ink-secondary);
-  transition: transform 0.2s;
-}
-
-/* Coloring spheres depending on skill family */
-.planet-sphere.type-js { background-color: var(--ink-highlight); box-shadow: 0 0 10px var(--ink-highlight); }
-.planet-sphere.type-css { background-color: var(--ink-primary); box-shadow: 0 0 10px var(--ink-primary); }
-.planet-sphere.type-backend { background-color: var(--ink-accent); box-shadow: 0 0 10px var(--ink-accent); }
-.planet-sphere.type-git { background-color: var(--ink-success); box-shadow: 0 0 10px var(--ink-success); }
-
-/* Planet hover label */
-.planet-label {
-  position: absolute;
-  bottom: 25px;
-  left: 50%;
-  transform: translateX(-50%) scale(0.9);
-  background-color: rgba(12, 14, 34, 0.95);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s, transform 0.2s;
-  color: var(--text-main);
-  text-align: center;
-}
-
-.orbit-planet-node:hover .planet-label {
-  opacity: 1;
-  transform: translateX(-50%) scale(1);
-}
-
-.orbit-planet-node:hover .planet-sphere {
-  transform: scale(1.35);
-  filter: brightness(1.2);
-}
-
-/* Constellation experience road */
-.timeline-container {
-  position: relative;
-  padding-left: 2rem;
-}
-
-.timeline-line {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 7px;
-  width: 3px;
-  background-color: var(--border-color);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    var(--border-color),
-    var(--border-color) 12px,
-    transparent 12px,
-    transparent 20px
-  );
-}
-
-.timeline-node {
-  position: relative;
-  margin-bottom: 2.5rem;
-}
-
-.timeline-bullet {
-  position: absolute;
-  left: -2rem;
-  top: 4px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: var(--bg-main);
-  border: 2px solid var(--border-color);
-  z-index: 10;
-  transform: translateX(1px);
-  box-shadow: 0 0 8px var(--border-color);
-  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-}
-
-.timeline-node:hover .timeline-bullet {
-  transform: translateX(1px) scale(1.35);
-  border-color: var(--ink-secondary);
-  box-shadow: 0 0 12px var(--ink-secondary);
-  background-color: var(--ink-secondary);
-}
-
-.timeline-time {
-  font-family: var(--font-hand);
-  color: var(--ink-secondary);
-  text-shadow: 0 0 5px rgba(0, 229, 255, 0.3);
-  font-weight: bold;
-  font-size: 1.05rem;
-  margin-bottom: 0.2rem;
-}
-
-.timeline-content {
-  background-color: var(--bg-canvas);
-  padding: 1.3rem;
-  border-radius: 8px;
-  border: 1.5px solid var(--border-color);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-  transition: transform var(--transition-fast), border-color var(--transition-fast);
-}
-
-.timeline-content:hover {
-  transform: translateX(3px) scale(1.01);
-  border-color: var(--border-color);
-}
-
-.timeline-role {
-  font-size: 1.25rem;
-  font-weight: 700;
-  text-shadow: 0 0 8px rgba(255,255,255,0.1);
-}
-
-.timeline-company {
-  font-weight: 600;
-  color: var(--ink-secondary);
-  margin-bottom: 0.6rem;
-}
-
-.timeline-desc {
-  font-size: 0.92rem;
-  color: var(--text-muted);
-}
-
-/* --- CONTACT SECTION SIGNAL PAD --- */
-.contact-container {
-  box-shadow: 0 0 25px rgba(0,0,0,0.6);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-
-.contact-info {
+.archive-card {
   background-color: var(--bg-card);
-  padding: 3rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  border-right: 2.5px solid var(--border-color);
-}
-
-.contact-info h3 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  color: var(--ink-secondary);
-  text-shadow: 0 0 10px rgba(0,229,255,0.3);
-}
-
-.contact-info p {
-  color: var(--text-muted);
-  margin-bottom: 2rem;
-}
-
-.contact-links {
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.2rem;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  box-shadow: var(--space-glow);
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.paper-sketch-decoration {
-  margin-top: 3rem;
-  padding: 1.5rem;
-  border: 1.5px dashed rgba(32, 39, 88, 0.5);
-  border-radius: 8px;
-  position: relative;
-  text-align: center;
+.archive-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--ink-secondary);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.25);
 }
 
-.cup-doodle {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  animation: orbit-float 8s ease-in-out infinite alternate;
-  display: inline-block;
-}
-
-.quote-doodle {
-  font-style: italic;
-  font-size: 1rem;
-  color: var(--text-muted);
-}
-
-.contact-form-pad {
-  padding: 3rem;
+.archive-media {
+  width: 100%;
+  aspect-ratio: 1.2 / 1;
   background-color: var(--bg-canvas);
-  background-image: 
-    linear-gradient(rgba(0, 229, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 229, 255, 0.015) 1px, transparent 1px);
-  background-size: 30px 30px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
 }
 
-.form-group {
-  margin-bottom: 1.3rem;
+.archive-media img,
+.archive-media svg {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
 }
 
-.form-group label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.4rem;
-  font-size: 0.95rem;
+.archive-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.archive-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 5px rgba(255,255,255,0.1);
+}
+
+.archive-meta {
+  font-size: 0.8rem;
   color: var(--text-muted);
 }
 
-.form-status-msg {
-  margin-top: 0.8rem;
-  font-size: 0.95rem;
+.archive-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border-color);
+  margin-top: auto;
+}
+
+.archive-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--text-main);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.archive-btn:hover {
+  border-color: var(--ink-secondary);
+  color: var(--ink-secondary);
+}
+
+.archive-btn.like-btn {
+  border-color: rgba(255, 64, 129, 0.3);
+  color: rgba(255, 64, 129, 0.8);
+}
+
+.archive-btn.like-btn:hover {
+  border-color: var(--ink-primary);
+  color: var(--ink-primary);
+  box-shadow: 0 0 5px rgba(255, 64, 129, 0.2);
 }
 
 /* --- LIGHTBOX MODAL --- */

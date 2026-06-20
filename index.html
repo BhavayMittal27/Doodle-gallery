@@ -57,9 +57,8 @@
       
       <nav class="main-nav">
         <ul>
-          <li><a href="#garden" class="nav-link active">Garden</a></li>
-          <li><a href="#observatory" class="nav-link">Observatory Resume</a></li>
-          <li><a href="#contact" class="nav-link">Signal</a></li>
+          <li><a href="#space" class="nav-link active">Space</a></li>
+          <li><a href="#gallery-archive" class="nav-link">Star Gallery</a></li>
         </ul>
       </nav>
 
@@ -72,8 +71,8 @@
   <!-- Main Scroll Container -->
   <main class="content-container">
 
-    <!-- Unified Celestial Garden Section -->
-    <section id="garden" class="garden-section page-section">
+    <!-- Unified Celestial Space Section -->
+    <section id="space" class="garden-section page-section">
       <div class="section-header text-center">
         <h1 class="section-title hand-drawn">The Constellation Garden</h1>
         <p class="section-subtitle">Draw stars, comets, or planets and cast them directly onto our floating space island below.</p>
@@ -205,79 +204,15 @@
       </div>
     </section>
 
-    <!-- Observatory Resume Section -->
-    <section id="observatory" class="resume-section page-section">
+    <!-- Star Gallery Archive Section -->
+    <section id="gallery-archive" class="archive-section page-section">
       <div class="section-header text-center">
-        <h2 class="section-title hand-drawn">Observatory Resume</h2>
-        <p class="section-subtitle">Map the orbits of my skillsets and follow the constellation road of my professional development.</p>
+        <h2 class="section-title hand-drawn">Star Gallery Catalog</h2>
+        <p class="section-subtitle">Browse through all the discovered comets, stars, and constellations saved in our cosmic databases.</p>
       </div>
 
-      <!-- Astronomical Notebook -->
-      <div class="resume-book space-border-heavy">
-        <div class="resume-tabs">
-          <button class="resume-tab active hand-drawn" data-tab="profile">
-            <span>🛰</span> Astronomer Profile
-          </button>
-          <button class="resume-tab hand-drawn" data-tab="skills">
-            <span>🌀</span> Skill Orbits
-          </button>
-          <button class="resume-tab hand-drawn" data-tab="experience">
-            <span>✨</span> Experience Road
-          </button>
-        </div>
-
-        <div class="resume-page-content" id="resume-tab-content">
-          <!-- Populated in app.js -->
-        </div>
-      </div>
-    </section>
-
-    <!-- Contact Form (Signal Sender) -->
-    <section id="contact" class="contact-section page-section">
-      <div class="section-header text-center">
-        <h2 class="section-title hand-drawn">Transmit a Signal</h2>
-        <p class="section-subtitle">Beam an idea into outer space or send me a personal message. Let's make contact!</p>
-      </div>
-
-      <div class="contact-container space-border">
-        <div class="contact-info">
-          <h3 class="hand-drawn">Establish Connection</h3>
-          <p>Standard links are provided for telemetry. Or send a coordinate message using our deep-space signal pad.</p>
-          <div class="contact-links">
-            <a href="mailto:developer@example.com" class="space-btn secondary-btn hand-drawn flex-btn">
-              <span>✉</span> developer@example.com
-            </a>
-            <a href="https://github.com" target="_blank" class="space-btn secondary-btn hand-drawn flex-btn">
-              <span>★</span> GitHub Profile
-            </a>
-            <a href="https://linkedin.com" target="_blank" class="space-btn secondary-btn hand-drawn flex-btn">
-              <span>☍</span> LinkedIn Profile
-            </a>
-          </div>
-          <div class="paper-sketch-decoration">
-            <div class="cup-doodle">🛰</div>
-            <div class="quote-doodle hand-drawn">"Constellations are maps of code mapped in the sky."</div>
-          </div>
-        </div>
-
-        <form id="contact-form" class="contact-form-pad">
-          <div class="form-group">
-            <label for="contact-name" class="hand-drawn">Transmitter Name</label>
-            <input type="text" id="contact-name" class="space-input hand-drawn" required placeholder="e.g. Nicolaus Copernicus">
-          </div>
-          <div class="form-group">
-            <label for="contact-email" class="hand-drawn">Return Frequencies (Email)</label>
-            <input type="email" id="contact-email" class="space-input hand-drawn" required placeholder="e.g. copernicus@heliocentric.org">
-          </div>
-          <div class="form-group">
-            <label for="contact-msg" class="hand-drawn">Signal Payload (Message)</label>
-            <textarea id="contact-msg" class="space-input hand-drawn" rows="5" required placeholder="Write your cosmic message..."></textarea>
-          </div>
-          <button type="submit" class="space-btn primary-btn hand-drawn full-btn">
-            Transmit Signal ✈
-          </button>
-          <div id="form-status" class="hand-drawn text-center form-status-msg"></div>
-        </form>
+      <div class="archive-grid" id="archive-grid">
+        <!-- Populate dynamically in app.js -->
       </div>
     </section>
 

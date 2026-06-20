@@ -32,8 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupMobileDrawer();
     renderCelestialSky();
     setupGalleryFilters();
-    setupResumeTabs();
-    setupContactForm();
     setupFloatingDoodlesInteraction();
     
     // Load drawings from Supabase in background
@@ -243,8 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
         drawer.classList.remove('active');
       }
 
-      // Scroll to garden
-      document.getElementById('garden').scrollIntoView({ behavior: 'smooth' });
+      // Scroll to space dashboard
+      document.getElementById('space').scrollIntoView({ behavior: 'smooth' });
       
       // Pulse the new star
       setTimeout(() => {
@@ -322,14 +320,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return matchesCategory && matchesSearch;
     });
 
+    // 1. Render nodes overlaying the central floating island
     filtered.forEach(doodle => {
       const coords = getCoordinatesForId(doodle.id);
       
       const node = document.createElement('div');
       node.className = `constellation-node type-${doodle.category}`;
       node.setAttribute('data-star-id', doodle.id);
-      node.style.left = `${coords.x}px`;
-      node.style.top = `${coords.y}px`;
+      node.style.left = `${coords.x}%`;
+      node.style.top = `${coords.y}%`;
 
       let mediaContent = '';
       if (doodle.svg) {
@@ -354,13 +353,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Click to open inspection details modal
       node.addEventListener('click', (e) => {
-        // Prevent click triggers from bubbling into panning container
         e.stopPropagation();
         openLightbox(doodle);
       });
 
       layer.appendChild(node);
     });
+
+    // 2. Render cards in the star gallery archive grid below
+    const archiveGrid = document.getElementById('archive-grid');
+    if (archiveGrid) {
+      archiveGrid.innerHTML = '';
+      filtered.forEach(doodle => {
+        const card = document.createElement('div');
+        card.className = 'archive-card';
+
+        let mediaContent = '';
+        if (doodle.svg) {
+          mediaContent = doodle.svg;
+        } else if (doodle.imageSrc) {
+          mediaContent = `<img src="${doodle.imageSrc}" alt="${doodle.title}" loading="lazy">`;
+        }
+
+        card.innerHTML = `
+          <div class="archive-media">
+            ${mediaContent}
+          </div>
+          <div class="archive-info">
+            <h4 class="archive-title hand-drawn">${doodle.title}</h4>
+            <div class="archive-meta">By ${doodle.author} &bull; ${doodle.date}</div>
+          </div>
+          <div class="archive-footer">
+            <button class="archive-btn like-btn" data-action="like">
+              <span>♥</span> <span class="like-count-val">${doodle.likes}</span>
+            </button>
+            <button class="archive-btn" data-action="inspect">
+              <span>🔍</span> Inspect
+            </button>
+          </div>
+        `;
+
+        // Click handlers
+        const likeBtn = card.querySelector('[data-action="like"]');
+        likeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          doodle.likes++;
+          card.querySelector('.like-count-val').textContent = doodle.likes;
+          showToast(`Cosmic orbit count increased for "${doodle.title}"!`, 'success');
+          renderCelestialSky();
+        });
+
+        const inspectBtn = card.querySelector('[data-action="inspect"]');
+        inspectBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openLightbox(doodle);
+        });
+
+        card.addEventListener('click', () => {
+          openLightbox(doodle);
+        });
+
+        archiveGrid.appendChild(card);
+      });
+    }
   }
 
   function setupGalleryFilters() {
@@ -446,170 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
     overlay.onclick = closeModal;
   }
 
-  // --- OBSERVATORY RESUME TABS ---
-  function setupResumeTabs() {
-    const tabs = document.querySelectorAll('.resume-tab');
-    const contentPanel = document.getElementById('resume-tab-content');
-    
-    const loadTab = (tabName) => {
-      contentPanel.style.opacity = '0';
-      
-      setTimeout(() => {
-        if (tabName === 'profile') {
-          renderProfileTab();
-        } else if (tabName === 'skills') {
-          renderSkillsTab();
-        } else if (tabName === 'experience') {
-          renderExperienceTab();
-        }
-        contentPanel.style.opacity = '1';
-      }, 150);
-    };
 
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        loadTab(tab.dataset.tab);
-      });
-    });
-
-    loadTab('profile');
-  }
-
-  function renderProfileTab() {
-    const panel = document.getElementById('resume-tab-content');
-    panel.innerHTML = `
-      <div class="profile-grid">
-        <div class="profile-avatar-box space-border">
-          ${RESUME_PROFILE.avatarSvg}
-        </div>
-        <div class="profile-details">
-          <h3 class="hand-drawn">${RESUME_PROFILE.name}</h3>
-          <div class="profile-title hand-drawn">${RESUME_PROFILE.title}</div>
-          <p class="profile-bio">${RESUME_PROFILE.bio}</p>
-          <ul class="profile-quick-facts">
-            ${RESUME_PROFILE.facts.map(fact => `
-              <li>
-                <span class="bullet">✦</span>
-                <span class="fact-text">${fact}</span>
-              </li>
-            `).join('')}
-          </ul>
-        </div>
-      </div>
-    `;
-  }
-
-  // Renders skills as glowing orbiting planet grids
-  function renderSkillsTab() {
-    const panel = document.getElementById('resume-tab-content');
-    
-    panel.innerHTML = `
-      <div class="orbit-universe space-border">
-        <!-- Central Sun -->
-        <div class="orbit-core-sun" title="Astronomer Core (Bhavay)">
-          <span class="sun-label hand-drawn">Developer</span>
-          <span class="sun-label hand-drawn">Core</span>
-        </div>
-        
-        <!-- Orbit rings background -->
-        <div class="orbit-path-ring ring-1"></div>
-        <div class="orbit-path-ring ring-2"></div>
-        <div class="orbit-path-ring ring-3"></div>
-        
-        <!-- Rotator Ring 1: Fast (Frontend Core) -->
-        <div class="orbit-rotator speed-fast">
-          <div class="orbit-planet-node planet-js" title="JavaScript">
-            <div class="planet-sphere type-js"></div>
-            <div class="planet-label hand-drawn">JavaScript<br><strong>92%</strong></div>
-          </div>
-          <div class="orbit-planet-node planet-canvas" title="Canvas &amp; SVGs">
-            <div class="planet-sphere type-git"></div>
-            <div class="planet-label hand-drawn">Canvas &amp; SVGs<br><strong>88%</strong></div>
-          </div>
-        </div>
-        
-        <!-- Rotator Ring 2: Medium (SaaS / Styling Frameworks) -->
-        <div class="orbit-rotator speed-medium">
-          <div class="orbit-planet-node planet-react" title="React / Next.js">
-            <div class="planet-sphere type-js"></div>
-            <div class="planet-label hand-drawn">React / Next.js<br><strong>85%</strong></div>
-          </div>
-          <div class="orbit-planet-node planet-css" title="CSS3 Animations">
-            <div class="planet-sphere type-css"></div>
-            <div class="planet-label hand-drawn">CSS &amp; Keyframes<br><strong>95%</strong></div>
-          </div>
-          <div class="orbit-planet-node planet-node" title="Node.js">
-            <div class="planet-sphere type-backend"></div>
-            <div class="planet-label hand-drawn">Node.js / Express<br><strong>80%</strong></div>
-          </div>
-        </div>
-        
-        <!-- Rotator Ring 3: Slow (System Core databases & versionings) -->
-        <div class="orbit-rotator speed-slow">
-          <div class="orbit-planet-node planet-db" title="SQL / NoSQL Databases">
-            <div class="planet-sphere type-backend"></div>
-            <div class="planet-label hand-drawn">DBs (Postgres/Mongo)<br><strong>75%</strong></div>
-          </div>
-          <div class="orbit-planet-node planet-api" title="API gateways (REST/GraphQL)">
-            <div class="planet-sphere type-backend"></div>
-            <div class="planet-label hand-drawn">REST / GraphQL APIs<br><strong>84%</strong></div>
-          </div>
-          <div class="orbit-planet-node planet-git" title="Git / Devops workflow">
-            <div class="planet-sphere type-git"></div>
-            <div class="planet-label hand-drawn">Git Versioning<br><strong>82%</strong></div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // Renders experience as milestone constellations
-  function renderExperienceTab() {
-    const panel = document.getElementById('resume-tab-content');
-    panel.innerHTML = `
-      <div class="timeline-container">
-        <div class="timeline-line"></div>
-        ${RESUME_EXPERIENCE.map(job => `
-          <div class="timeline-node">
-            <div class="timeline-bullet"></div>
-            <div class="timeline-time">${job.time}</div>
-            <div class="timeline-content">
-              <h4 class="timeline-role">${job.role}</h4>
-              <div class="timeline-company hand-drawn">${job.company}</div>
-              <p class="timeline-desc">${job.desc}</p>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  // --- CONTACT SIGNAL FORM ---
-  function setupContactForm() {
-    const form = document.getElementById('contact-form');
-    const status = document.getElementById('form-status');
-    if (!form) return;
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const origText = submitBtn.innerHTML;
-      
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = 'Broadcasting signal... 📡';
-      status.textContent = '';
-
-      setTimeout(() => {
-        showToast('Telemetry signal broadcasted successfully!', 'success');
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = origText;
-        status.innerHTML = '<span style="color:var(--ink-success)">✓ Transmission acknowledged by ground control!</span>';
-        form.reset();
-      }, 1500);
-    });
-  }
 
   // --- FLOATING BACKGROUND INTERACTIVE DECORATION ---
   function setupFloatingDoodlesInteraction() {
