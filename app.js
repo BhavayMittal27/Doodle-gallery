@@ -252,17 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
         typewriterTimeout = setTimeout(() => {
           typeSubtitle("Add a flower to our garden? ");
         }, 5000);
-
-        // Reset canvas/button state
-        mainCanvas.clear();
-        saveBtn.disabled = true;
-
-        // Close mobile drawer if active
-        const drawer = document.getElementById('forge-panel');
-        if (drawer) {
-          drawer.classList.remove('active');
-          document.body.style.overflow = '';
-        }
         return;
       }
       
