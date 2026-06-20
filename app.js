@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderGardenSky();
     setupGalleryToolbar();
     
+    // Start typewriter title animation
+    typeSubtitle("Add a flower to our garden? ");
+
     // Listen to canvas change to toggle Plant button disabled state
     const saveBtn = document.getElementById('save-gallery-btn');
     const paintCanvas = document.getElementById('paint-canvas');
@@ -46,6 +49,110 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load drawings from Supabase in background
     fetchSupabaseFlowers();
+  }
+
+  // --- TYPEWRITER SUBTITLE ANIMATION ---
+  let typewriterInterval = null;
+  let typewriterTimeout = null;
+
+  function typeSubtitle(text) {
+    const subtitleEl = document.querySelector('.studio-subtitle');
+    if (!subtitleEl) return;
+    
+    if (typewriterInterval) clearInterval(typewriterInterval);
+    if (typewriterTimeout) clearTimeout(typewriterTimeout);
+    
+    subtitleEl.innerHTML = '';
+    
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor animate-pulse';
+    cursor.textContent = '|';
+    cursor.style.marginLeft = '2px';
+    
+    let index = 0;
+    subtitleEl.appendChild(cursor);
+    
+    typewriterInterval = setInterval(() => {
+      if (index < text.length) {
+        const char = document.createTextNode(text[index]);
+        subtitleEl.insertBefore(char, cursor);
+        index++;
+      } else {
+        clearInterval(typewriterInterval);
+        typewriterInterval = null;
+        cursor.remove();
+      }
+    }, 50);
+  }
+
+  // --- DRAWING MODERATION & CENTERING (from Codedex template) ---
+  function decideFlagging(pixelData) {
+    let nonWhite = 0;
+    const totalPixels = pixelData.length / 4;
+
+    for (let i = 0; i < pixelData.length; i += 4) {
+      const r = pixelData[i];
+      const g = pixelData[i + 1];
+      const b = pixelData[i + 2];
+      const a = pixelData[i + 3];
+      if (a === 0) continue;
+      const isWhite = r > 245 && g > 245 && b > 245;
+      if (!isWhite) nonWhite++;
+    }
+
+    // Flag empty, low ink, or blank sketches (less than 0.3% non-white/non-transparent pixels)
+    return nonWhite / totalPixels < 0.003;
+  }
+
+  function findContentBounds(imageData, w, h) {
+    const data = imageData.data;
+    let minX = w, minY = h, maxX = -1, maxY = -1;
+    const isInk = (r, g, b, a) => a > 10 && !(r > 245 && g > 245 && b > 245);
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+        if (isInk(r, g, b, a)) {
+          if (x < minX) minX = x;
+          if (y < minY) minY = y;
+          if (x > maxX) maxX = x;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    if (maxX === -1) return null;
+    return { minX, minY, maxX, maxY };
+  }
+
+  function makeCenteredSquarePng(canvas, pad = 24) {
+    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const img = ctx.getImageData(0, 0, w, h);
+    
+    const bounds = findContentBounds(img, w, h);
+    if (!bounds) return canvas;
+
+    const bw = bounds.maxX - bounds.minX + 1;
+    const bh = bounds.maxY - bounds.minY + 1;
+    const size = Math.max(bw, bh) + pad * 2;
+
+    const out = document.createElement('canvas');
+    out.width = size;
+    out.height = size;
+    const octx = out.getContext('2d');
+
+    const dx = Math.floor((size - bw) / 2);
+    const dy = Math.floor((size - bh) / 2);
+
+    octx.drawImage(
+      canvas,
+      bounds.minX, bounds.minY, bw, bh,
+      dx, dy, bw, bh
+    );
+
+    return out;
   }
 
   // --- NAV OVERLAYS TOGGLING ---
@@ -132,14 +239,41 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const saveBtn = document.getElementById('save-gallery-btn');
       const originalText = saveBtn.innerHTML;
+
+      // Extract image data to run client-side decidesFlagging check
+      const imgData = mainCanvas.ctx.getImageData(0, 0, mainCanvas.canvas.width, mainCanvas.canvas.height);
+      const flagged = decideFlagging(imgData.data);
+
+      if (flagged) {
+        // Block planting and show warning subtitle
+        showToast("That's not a flower. Try again?", "danger");
+        typeSubtitle("That's not a flower. Try again? ");
+        
+        typewriterTimeout = setTimeout(() => {
+          typeSubtitle("Add a flower to our garden? ");
+        }, 5000);
+
+        // Reset canvas/button state
+        mainCanvas.clear();
+        saveBtn.disabled = true;
+
+        // Close mobile drawer if active
+        const drawer = document.getElementById('forge-panel');
+        if (drawer) {
+          drawer.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+        return;
+      }
       
       // Default metadata to match minimalist annasgarden.dev database records
       const title = 'Planted Flower';
       const author = 'Gardener';
       const description = 'A community flower in BHAVI KA KHET.';
       
-      // Get the transparent PNG image directly from the canvas
-      const transparentImgData = mainCanvas.canvas.toDataURL();
+      // Crop, center, and get the transparent PNG image from the canvas
+      const exportCanvas = makeCenteredSquarePng(mainCanvas.canvas, 32);
+      const transparentImgData = exportCanvas.toDataURL();
       let imageSrc = transparentImgData;
 
       const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);

@@ -757,3 +757,18 @@ a {
     width: 100%;
   }
 }
+
+/* Typewriter animation pulse cursor */
+.animate-pulse {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.studio-subtitle {
+  min-height: 1.6em; /* Prevent layout shift while typing */
+}
+
