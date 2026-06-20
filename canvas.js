@@ -257,7 +257,7 @@ class SketchCanvas {
   }
 
   /* --- EXPORT/SAVE IMAGE --- */
-  // Merges the strokes canvas onto a background (paper or chalkboard) for high fidelity saving
+  // Merges the strokes canvas onto a deep space coordinates chart for high fidelity saving
   getMergedDataURL(isDarkMode) {
     const dpr = window.devicePixelRatio || 1;
     const exportCanvas = document.createElement('canvas');
@@ -265,41 +265,42 @@ class SketchCanvas {
     exportCanvas.height = this.canvas.height;
     const exportCtx = exportCanvas.getContext('2d');
     
-    // Draw background texture
-    if (isDarkMode) {
-      // Chalkboard Background
-      exportCtx.fillStyle = '#1b221f';
-      exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-      
-      // Draw subtle chalkboard grid
-      exportCtx.fillStyle = 'rgba(255, 255, 255, 0.02)';
-      for (let x = 0; x < exportCanvas.width; x += 16 * dpr) {
-        exportCtx.fillRect(x, 0, 1 * dpr, exportCanvas.height);
-      }
-      for (let y = 0; y < exportCanvas.height; y += 16 * dpr) {
-        exportCtx.fillRect(0, y, exportCanvas.width, 1 * dpr);
-      }
-    } else {
-      // Lined Paper Background
-      exportCtx.fillStyle = '#fcfbfa';
-      exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-      
-      // Draw grid lines
-      exportCtx.strokeStyle = 'rgba(186, 218, 255, 0.25)';
-      exportCtx.lineWidth = 1.5 * dpr;
-      
-      const step = 24 * dpr;
-      exportCtx.beginPath();
-      for (let x = step; x < exportCanvas.width; x += step) {
-        exportCtx.moveTo(x, 0);
-        exportCtx.lineTo(x, exportCanvas.height);
-      }
-      for (let y = step; y < exportCanvas.height; y += step) {
-        exportCtx.moveTo(0, y);
-        exportCtx.lineTo(exportCanvas.width, y);
-      }
-      exportCtx.stroke();
+    // Deep Space Backdrop
+    exportCtx.fillStyle = '#080918';
+    exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    
+    // Draw astronomical coordinate grids
+    exportCtx.strokeStyle = 'rgba(0, 229, 255, 0.04)';
+    exportCtx.lineWidth = 1 * dpr;
+    
+    const step = 40 * dpr;
+    exportCtx.beginPath();
+    for (let x = 0; x < exportCanvas.width; x += step) {
+      exportCtx.moveTo(x, 0);
+      exportCtx.lineTo(x, exportCanvas.height);
     }
+    for (let y = 0; y < exportCanvas.height; y += step) {
+      exportCtx.moveTo(0, y);
+      exportCtx.lineTo(exportCanvas.width, y);
+    }
+    exportCtx.stroke();
+    
+    // Faint observatory circular lines
+    const cx = exportCanvas.width / 2;
+    const cy = exportCanvas.height / 2;
+    exportCtx.strokeStyle = 'rgba(0, 229, 255, 0.08)';
+    
+    exportCtx.beginPath();
+    exportCtx.arc(cx, cy, 80 * dpr, 0, 2 * Math.PI);
+    exportCtx.arc(cx, cy, 180 * dpr, 0, 2 * Math.PI);
+    exportCtx.stroke();
+    
+    exportCtx.beginPath();
+    exportCtx.moveTo(cx - 20 * dpr, cy);
+    exportCtx.lineTo(cx + 20 * dpr, cy);
+    exportCtx.moveTo(cx, cy - 20 * dpr);
+    exportCtx.lineTo(cx, cy + 20 * dpr);
+    exportCtx.stroke();
     
     // Draw drawing layer on top
     exportCtx.drawImage(this.canvas, 0, 0);

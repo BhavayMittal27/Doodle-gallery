@@ -1,117 +1,53 @@
 /* ==========================================================================
-   MAIN APPLICATION CONTROLLER (app.js)
+   CONSTELLATION APPS CONTROLLER (app.js)
    ========================================================================== */
 
 import { supabase } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // --- STATE MANAGEMENT ---
-  let doodlesList = [...PORTFOLIO_DOODLES]; // Combines preloaded & user doodles
+  let doodlesList = [...PORTFOLIO_DOODLES]; // Combines preloaded & database doodles
   let currentFilter = 'all';
-  let activeTheme = 'paper'; // paper or chalkboard
   
   // Canvas Instantiations
   const mainCanvas = new SketchCanvas('paint-canvas');
   const heroCanvas = new SketchCanvas('hero-mini-canvas', true);
 
-  // --- PALETTE DEFINITIONS ---
-  const PALETTES = {
-    paper: [
-      { name: 'Graphite', hex: '#2b2b2b' },
-      { name: 'Rose Pen', hex: '#ec407a' },
-      { name: 'Blue Pen', hex: '#29b6f6' },
-      { name: 'Purple Marker', hex: '#ab47bc' },
-      { name: 'Green Highlighter', hex: '#9ccc65' },
-      { name: 'Red Pen', hex: '#ef5350' }
-    ],
-    chalkboard: [
-      { name: 'White Chalk', hex: '#f5f6f5' },
-      { name: 'Pink Chalk', hex: '#ff8da1' },
-      { name: 'Blue Chalk', hex: '#8dcbff' },
-      { name: 'Purple Chalk', hex: '#e1b1ff' },
-      { name: 'Green Chalk', hex: '#b9f6ca' },
-      { name: 'Red Chalk', hex: '#ff8a80' }
-    ]
-  };
+  // --- PALETTE DEFINITIONS (Celestial Neon Colors) ---
+  const CELESTIAL_PALETTE = [
+    { name: 'Comet White', hex: '#ffffff' },
+    { name: 'Sun Gold', hex: '#ffd740' },
+    { name: 'Cosmic Cyan', hex: '#00e5ff' },
+    { name: 'Nebula Pink', hex: '#ff4081' },
+    { name: 'Stardust Violet', hex: '#e040fb' },
+    { name: 'Aurora Teal', hex: '#1de9b6' }
+  ];
 
   // --- INITIALIZATION ---
   initApp();
 
   function initApp() {
-    setupTheme();
     setupNavigation();
     setupColorPalette();
     setupCanvasControls();
-    renderGallery();
+    setupSkyMapPanning();
+    renderCelestialSky();
     setupGalleryFilters();
     setupResumeTabs();
     setupContactForm();
     setupFloatingDoodlesInteraction();
-
-    // Fetch doodles from Supabase in background
+    
+    // Load drawings from Supabase in background
     fetchSupabaseDoodles();
   }
 
-  // --- THEME MANAGEMENT ---
-  function setupTheme() {
-    const themeToggle = document.getElementById('theme-toggle');
-    const sunIcon = themeToggle.querySelector('.sun-icon');
-    const moonIcon = themeToggle.querySelector('.moon-icon');
-
-    // Default to paper theme
-    document.body.className = 'theme-paper';
-
-    themeToggle.addEventListener('click', () => {
-      if (activeTheme === 'paper') {
-        activeTheme = 'chalkboard';
-        document.body.className = 'theme-chalkboard';
-        sunIcon.style.display = 'none';
-        moonIcon.style.display = 'block';
-        showToast('Switched to Chalkboard (Dark Mode)', 'info');
-      } else {
-        activeTheme = 'paper';
-        document.body.className = 'theme-paper';
-        sunIcon.style.display = 'block';
-        moonIcon.style.display = 'none';
-        showToast('Switched to Sketchbook (Light Mode)', 'info');
-      }
-      
-      // Update color palette bubbles and canvas active stroke
-      setupColorPalette();
-      
-      // If canvas is blank, redraw or reset canvas defaults
-      resetCanvasDefaultsForTheme();
-    });
-  }
-
-  function resetCanvasDefaultsForTheme() {
-    // Select first color of the new theme
-    const palette = PALETTES[activeTheme];
-    mainCanvas.currentColor = palette[0].hex;
-    heroCanvas.currentColor = palette[0].hex;
-
-    // Reset color inputs
-    const customColor = document.getElementById('custom-color');
-    if (customColor) customColor.value = palette[0].hex;
-
-    // Refresh UI highlights
-    const colorPalette = document.getElementById('color-palette');
-    const firstBubble = colorPalette.querySelector('.color-bubble');
-    if (firstBubble) {
-      colorPalette.querySelectorAll('.color-bubble').forEach(b => b.classList.remove('active'));
-      firstBubble.classList.add('active');
-    }
-  }
-
-  // --- NAVIGATION FLOWS ---
+  // --- CELESTIAL NAV ---
   function setupNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
-    
-    // Intersection Observer to highlight active navigation link on scroll
     const sections = document.querySelectorAll('.page-section');
     const options = {
       root: null,
-      threshold: 0.3,
+      threshold: 0.2,
       rootMargin: '-80px 0px 0px 0px'
     };
 
@@ -138,21 +74,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!paletteContainer) return;
     paletteContainer.innerHTML = '';
 
-    const colors = PALETTES[activeTheme];
-    colors.forEach((color, idx) => {
+    CELESTIAL_PALETTE.forEach((color, idx) => {
       const bubble = document.createElement('button');
       bubble.className = `color-bubble ${idx === 0 ? 'active' : ''}`;
       bubble.style.backgroundColor = color.hex;
+      bubble.style.color = color.hex; // sets glow shadow color in css
       bubble.title = color.name;
       bubble.setAttribute('aria-label', color.name);
 
       bubble.addEventListener('click', () => {
-        // Update active class
         paletteContainer.querySelectorAll('.color-bubble').forEach(b => b.classList.remove('active'));
         bubble.classList.add('active');
-
-        // Apply color
         mainCanvas.currentColor = color.hex;
+        
         const customColor = document.getElementById('custom-color');
         if (customColor) customColor.value = color.hex;
       });
@@ -160,10 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
       paletteContainer.appendChild(bubble);
     });
 
-    // Custom Color Picker event
     const customColor = document.getElementById('custom-color');
     if (customColor) {
-      customColor.value = colors[0].hex;
+      customColor.value = CELESTIAL_PALETTE[0].hex;
       customColor.addEventListener('input', (e) => {
         paletteContainer.querySelectorAll('.color-bubble').forEach(b => b.classList.remove('active'));
         mainCanvas.currentColor = e.target.value;
@@ -173,25 +106,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- DRAWING TOOLKIT INTERACTIONS ---
   function setupCanvasControls() {
-    // Brush Size Slider
+    // Brush Size
     const sizeSlider = document.getElementById('brush-size');
     const sizeVal = document.getElementById('brush-size-val');
     sizeSlider.addEventListener('input', (e) => {
-      const size = e.target.value;
-      mainCanvas.brushSize = size;
-      sizeVal.textContent = `${size}px`;
+      mainCanvas.brushSize = e.target.value;
+      sizeVal.textContent = `${e.target.value}px`;
     });
 
-    // Opacity Slider
+    // Opacity
     const opacitySlider = document.getElementById('brush-opacity');
     const opacityVal = document.getElementById('brush-opacity-val');
     opacitySlider.addEventListener('input', (e) => {
-      const opacity = e.target.value / 100;
-      mainCanvas.brushOpacity = opacity;
+      mainCanvas.brushOpacity = e.target.value / 100;
       opacityVal.textContent = `${e.target.value}%`;
     });
 
-    // Tool Toggles
+    // Tool selectors
     const toolBtns = document.querySelectorAll('.tool-btn');
     toolBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -201,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Shape Toggles
+    // Shape selectors
     const shapeBtns = document.querySelectorAll('.shape-btn');
     shapeBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -211,131 +142,273 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Action buttons
+    // Actions
     document.getElementById('undo-btn').addEventListener('click', () => mainCanvas.undo());
     document.getElementById('redo-btn').addEventListener('click', () => mainCanvas.redo());
     document.getElementById('clear-btn').addEventListener('click', () => {
       mainCanvas.clear();
-      showToast('Canvas cleared!', 'info');
+      showToast('Forge wiped clean!', 'info');
     });
 
-    // Hero Canvas mini controls
     document.getElementById('clear-hero-canvas').addEventListener('click', () => {
       heroCanvas.clear();
-      showToast('Scratchpad cleared!', 'info');
+      showToast('Scratchpad wiped!', 'info');
     });
 
-    // Download PNG Action
+    // Download PNG
     document.getElementById('download-btn').addEventListener('click', () => {
-      const isDarkMode = (activeTheme === 'chalkboard');
-      const dataUrl = mainCanvas.getMergedDataURL(isDarkMode);
-      
+      const dataUrl = mainCanvas.getMergedDataURL(true); // always dark celestial backdrop
       const link = document.createElement('a');
-      link.download = `doodle_${Date.now()}.png`;
+      link.download = `constellation_${Date.now()}.png`;
       link.href = dataUrl;
       link.click();
-      showToast('PNG Downloaded!', 'success');
+      showToast('Constellation chart downloaded!', 'success');
     });
 
-    // Save/Post to Gallery Action
+    // Save/Post to Constellation Sky
     document.getElementById('save-gallery-btn').addEventListener('click', async () => {
       const titleInput = document.getElementById('doodle-title');
-      const title = titleInput.value.trim() || 'Untitled Doodle';
-      const isDarkMode = (activeTheme === 'chalkboard');
+      const title = titleInput.value.trim() || 'Unnamed Star';
       
       const saveBtn = document.getElementById('save-gallery-btn');
       const originalText = saveBtn.innerHTML;
       
-      // Get the image merged with notebook paper or chalkboard texture
-      const mergedImgData = mainCanvas.getMergedDataURL(isDarkMode);
+      // Get the image merged with space texture
+      const mergedImgData = mainCanvas.getMergedDataURL(true); // always dark celestial
       let imageSrc = mergedImgData;
 
-      // Check if Supabase is active
+      const newId = `user-doodle-${Date.now()}`;
+
       if (supabase) {
         try {
           saveBtn.disabled = true;
-          saveBtn.innerHTML = `<span>⏳</span> Uploading...`;
+          saveBtn.innerHTML = `<span>⏳</span> Beaming Star...`;
           
-          // 1. Convert DataURL to Blob
           const blob = dataURLtoBlob(mergedImgData);
-          
-          // 2. Generate unique filename
           const filename = `${Date.now()}-${crypto.randomUUID()}.png`;
           const path = `public/${filename}`;
           
-          // 3. Upload to Supabase Storage drawings bucket
           const { error: uploadError } = await supabase.storage
             .from('drawings')
             .upload(path, blob, { contentType: 'image/png', upsert: false });
             
           if (uploadError) throw uploadError;
           
-          // 4. Insert Metadata into drawings table
           const { error: insertError } = await supabase
             .from('drawings')
             .insert([{ path, caption: title, flagged: false }]);
             
           if (insertError) throw insertError;
           
-          // 5. Get Public URL
           const { data: publicData } = supabase.storage
             .from('drawings')
             .getPublicUrl(path);
             
           imageSrc = publicData.publicUrl;
           
-          showToast(`Successfully posted "${title}" to the database!`, 'success');
+          showToast(`Successfully birthed "${title}" in the night sky!`, 'success');
         } catch (err) {
-          console.error("Supabase upload failed, saving locally:", err);
-          showToast("Failed to sync database. Saved locally.", "danger");
+          console.error("Supabase stargaze upload failed, saving locally:", err);
+          showToast("Failed to beam online. Saved in local session.", "danger");
         } finally {
           saveBtn.disabled = false;
           saveBtn.innerHTML = originalText;
         }
       } else {
-        showToast(`Successfully posted "${title}" to local gallery!`, 'success');
+        showToast(`Successfully birthed "${title}" in local viewport!`, 'success');
       }
 
-      // Create new user doodle
       const newDoodle = {
-        id: `user-doodle-${Date.now()}`,
+        id: newId,
         title: title,
         category: 'user',
-        tag: supabase ? 'Supabase Sketch' : 'Guest Sketch',
+        tag: supabase ? 'Supabase Star' : 'Guest Star',
         date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         likes: 0,
-        author: 'Guest Designer',
+        author: 'Guest Astronomer',
         description: supabase 
-          ? 'A custom drawing saved in the Supabase PostgreSQL database and loaded in real-time.' 
-          : 'A custom, interactive drawing painted live on the canvas within the Sketch Studio. Saved in local session memory.',
+          ? 'A user-forged constellation stored persistently in our Supabase space catalog.' 
+          : 'A custom, interactive constellation saved locally in active session coordinates.',
         techTags: supabase 
           ? ['Supabase DB', 'Supabase Storage', 'Canvas API']
-          : ['Canvas API', 'Mouse/Touch', 'Session Saved'],
+          : ['Canvas API', 'Telemetry Saved'],
         imageSrc: imageSrc
       };
 
       // Add to list and re-render
       doodlesList.unshift(newDoodle);
-      renderGallery();
+      renderCelestialSky();
       
       // Reset controls
       titleInput.value = '';
       mainCanvas.clear();
 
-      // Scroll to gallery section smoothly
-      document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
+      // Scroll to sky and center viewport on new star!
+      document.getElementById('sky').scrollIntoView({ behavior: 'smooth' });
+      
+      // Smoothly pan to the coordinates of this newly created star node
+      setTimeout(() => {
+        focusViewportOnStar(newId);
+      }, 800);
     });
   }
 
-  // --- GALLERY RENDERING & LIGHTBOX ---
-  function renderGallery() {
-    const grid = document.getElementById('gallery-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
+  // --- INTERACTIVE SKY MAP PANNING LOGIC ---
+  let isPanning = false;
+  let startX = 0, startY = 0;
+  let scrollX = 0, scrollY = 0;
+
+  function setupSkyMapPanning() {
+    const viewport = document.getElementById('sky-map-viewport');
+    const container = document.getElementById('sky-map-container');
+    if (!viewport || !container) return;
+
+    // Center the container inside the viewport on load
+    const centerContainer = () => {
+      const vRect = viewport.getBoundingClientRect();
+      scrollX = -((2400 - vRect.width) / 2);
+      scrollY = -((2400 - vRect.height) / 2);
+      container.style.transform = `translate(${scrollX}px, ${scrollY}px)`;
+    };
+    
+    // Initial centering
+    centerContainer();
+    window.addEventListener('resize', centerContainer);
+
+    // Mouse Panning
+    viewport.addEventListener('mousedown', (e) => {
+      // Don't pan if clicking interactive star nodes or buttons
+      if (e.target.closest('.constellation-node') || e.target.closest('.filter-btn') || e.target.closest('#gallery-search')) return;
+      
+      isPanning = true;
+      viewport.classList.add('dragging');
+      startX = e.clientX - scrollX;
+      startY = e.clientY - scrollY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
+      
+      let x = e.clientX - startX;
+      let y = e.clientY - startY;
+
+      // Clamp limits to prevent dragging map completely off screen
+      const vRect = viewport.getBoundingClientRect();
+      const minX = vRect.width - 2400;
+      const minY = vRect.height - 2400;
+
+      scrollX = Math.max(minX, Math.min(0, x));
+      scrollY = Math.max(minY, Math.min(0, y));
+
+      container.style.transform = `translate(${scrollX}px, ${scrollY}px)`;
+    });
+
+    window.addEventListener('mouseup', () => {
+      isPanning = false;
+      viewport.classList.remove('dragging');
+    });
+
+    // Touch Panning for tablets/mobile
+    viewport.addEventListener('touchstart', (e) => {
+      if (e.target.closest('.constellation-node') || e.target.closest('.filter-btn')) return;
+      
+      isPanning = true;
+      const touch = e.touches[0];
+      startX = touch.clientX - scrollX;
+      startY = touch.clientY - scrollY;
+    });
+
+    viewport.addEventListener('touchmove', (e) => {
+      if (!isPanning) return;
+      const touch = e.touches[0];
+      
+      let x = touch.clientX - startX;
+      let y = touch.clientY - startY;
+
+      const vRect = viewport.getBoundingClientRect();
+      const minX = vRect.width - 2400;
+      const minY = vRect.height - 2400;
+
+      scrollX = Math.max(minX, Math.min(0, x));
+      scrollY = Math.max(minY, Math.min(0, y));
+
+      container.style.transform = `translate(${scrollX}px, ${scrollY}px)`;
+    });
+
+    viewport.addEventListener('touchend', () => {
+      isPanning = false;
+    });
+  }
+
+  // Focuses and centers the viewport on a specific star node
+  function focusViewportOnStar(starId) {
+    const node = document.querySelector(`[data-star-id="${starId}"]`);
+    const viewport = document.getElementById('sky-map-viewport');
+    const container = document.getElementById('sky-map-container');
+    if (!node || !viewport || !container) return;
+
+    // Get star coordinates
+    const starX = parseFloat(node.style.left);
+    const starY = parseFloat(node.style.top);
+
+    const vRect = viewport.getBoundingClientRect();
+    
+    // Calculate required translate to place target star exactly in the center of the viewport
+    let targetX = -(starX - vRect.width / 2);
+    let targetY = -(starY - vRect.height / 2);
+
+    // Clamp coordinates
+    const minX = vRect.width - 2400;
+    const minY = vRect.height - 2400;
+    scrollX = Math.max(minX, Math.min(0, targetX));
+    scrollY = Math.max(minY, Math.min(0, targetY));
+
+    // Animate smoothly via CSS transition
+    container.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+    container.style.transform = `translate(${scrollX}px, ${scrollY}px)`;
+
+    // Remove transition after animation finishes so drag panning remains responsive
+    setTimeout(() => {
+      container.style.transition = '';
+    }, 800);
+
+    // Briefly trigger starlight pulse ring to identify the node
+    const pulseRing = node.querySelector('.star-pulse-ring');
+    if (pulseRing) {
+      pulseRing.style.animationDuration = '0.5s';
+      setTimeout(() => {
+        pulseRing.style.animationDuration = '2.2s';
+      }, 1500);
+    }
+  }
+
+  // --- STAR POSITIONING & RENDERING ---
+  // Generates deterministic pseudo-random coordinates centering clusters around the galaxy middle
+  function getCoordinatesForId(id) {
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // Concentric galactic spiral shape coordinates distribution
+    const angle = (Math.abs(hash) % 360) * (Math.PI / 180);
+    const radius = 180 + (Math.abs(hash * 37) % 850); // radii between 180px and 1030px from center
+    
+    // Central point is (1200, 1200) inside the 2400x2400 canvas map
+    const x = 1200 + Math.cos(angle) * radius;
+    const y = 1200 + Math.sin(angle) * radius;
+    
+    return { x: Math.round(x), y: Math.round(y) };
+  }
+
+  function renderCelestialSky() {
+    const layer = document.getElementById('constellations-layer');
+    if (!layer) return;
+    layer.innerHTML = '';
 
     const searchQuery = document.getElementById('gallery-search').value.toLowerCase().trim();
 
-    // Filter items based on current category and search query
+    // Filter list
     const filtered = doodlesList.filter(item => {
       const matchesCategory = (currentFilter === 'all' || item.category === currentFilter);
       const matchesSearch = item.title.toLowerCase().includes(searchQuery) ||
@@ -344,20 +417,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return matchesCategory && matchesSearch;
     });
 
-    if (filtered.length === 0) {
-      grid.innerHTML = `
-        <div class="no-results text-center hand-drawn" style="grid-column: 1/-1; padding: 3rem; font-size: 1.2rem; color: var(--text-muted);">
-          No doodles found matching your criteria. Draw one in the Studio! ✎
-        </div>
-      `;
-      return;
-    }
-
     filtered.forEach(doodle => {
-      const card = document.createElement('div');
-      card.className = 'gallery-card sketch-border';
+      const coords = getCoordinatesForId(doodle.id);
       
-      // Determine what to display in card-media (SVG string or PNG image src)
+      const node = document.createElement('div');
+      node.className = `constellation-node type-${doodle.category}`;
+      node.setAttribute('data-star-id', doodle.id);
+      node.style.left = `${coords.x}px`;
+      node.style.top = `${coords.y}px`;
+
       let mediaContent = '';
       if (doodle.svg) {
         mediaContent = doodle.svg;
@@ -365,71 +433,45 @@ document.addEventListener('DOMContentLoaded', () => {
         mediaContent = `<img src="${doodle.imageSrc}" alt="${doodle.title}" loading="lazy">`;
       }
 
-      card.innerHTML = `
-        <div class="card-media">
-          <span class="card-tag">${doodle.tag}</span>
-          ${mediaContent}
-        </div>
-        <div class="card-details">
-          <h4 class="card-title hand-drawn">${doodle.title}</h4>
-          <div class="card-meta">By ${doodle.author} &bull; ${doodle.date}</div>
-          <p class="card-desc">${doodle.description}</p>
-          <div class="card-footer">
-            <div class="card-likes">
-              <span>♥</span> <span class="likes-number">${doodle.likes}</span>
-            </div>
-            <button class="sketch-btn secondary-btn icon-btn card-like-btn" style="width:32px; height:32px; font-size: 0.75rem;" title="Like this doodle">♥</button>
+      node.innerHTML = `
+        <div class="star-glow-dot"></div>
+        <div class="star-pulse-ring"></div>
+        
+        <!-- Tooltip popover showing preview details -->
+        <div class="star-tooltip space-border">
+          <div class="tooltip-media">
+            ${mediaContent}
           </div>
+          <div class="tooltip-title hand-drawn">${doodle.title}</div>
+          <div class="tooltip-meta">By ${doodle.author}</div>
         </div>
       `;
 
-      // Handle card click to open Lightbox
-      card.addEventListener('click', (e) => {
-        // Prevent click when pressing the like button
-        if (e.target.classList.contains('card-like-btn')) {
-          e.stopPropagation();
-          likeDoodle(doodle.id, card.querySelector('.likes-number'));
-          return;
-        }
+      // Click to open inspection details modal
+      node.addEventListener('click', (e) => {
+        // Prevent click triggers from bubbling into panning container
+        e.stopPropagation();
         openLightbox(doodle);
       });
 
-      grid.appendChild(card);
+      layer.appendChild(node);
     });
   }
 
   function setupGalleryFilters() {
-    // Category Buttons
     const filterBtns = document.querySelectorAll('.filter-btn');
     filterBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         filterBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentFilter = btn.dataset.filter;
-        renderGallery();
+        renderCelestialSky();
       });
     });
 
-    // Search bar event
     document.getElementById('gallery-search').addEventListener('input', () => {
-      renderGallery();
+      renderCelestialSky();
     });
-  }
-
-  function likeDoodle(id, likesCountSpan) {
-    const doodle = doodlesList.find(d => d.id === id);
-    if (doodle) {
-      doodle.likes++;
-      likesCountSpan.textContent = doodle.likes;
-      showToast(`Liked "${doodle.title}"!`, 'success');
-      
-      // Update lightbox if it is open
-      const lightbox = document.getElementById('doodle-lightbox');
-      if (lightbox.classList.contains('active')) {
-        const likeBtnSpan = document.getElementById('like-count');
-        if (likeBtnSpan) likeBtnSpan.textContent = doodle.likes;
-      }
-    }
   }
 
   // --- LIGHTBOX FLOWS ---
@@ -450,7 +492,6 @@ document.addEventListener('DOMContentLoaded', () => {
     mediaContainer.innerHTML = '';
     if (doodle.svg) {
       mediaContainer.innerHTML = doodle.svg;
-      // Convert SVG code string to binary blob for download
       const svgBlob = new Blob([doodle.svg], { type: 'image/svg+xml;charset=utf-8' });
       downloadBtn.href = URL.createObjectURL(svgBlob);
       downloadBtn.download = `${doodle.id}.svg`;
@@ -460,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
       downloadBtn.download = `${doodle.title.replace(/\s+/g, '_')}.png`;
     }
 
-    // Populate detail texts
+    // Details text
     tagSpan.textContent = doodle.tag;
     titleHeader.textContent = doodle.title;
     authorSpan.textContent = doodle.author;
@@ -468,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
     descP.textContent = doodle.description;
     likeCountSpan.textContent = doodle.likes;
 
-    // Tech tags list
+    // Tech tags
     techTagsList.innerHTML = '';
     doodle.techTags.forEach(tag => {
       const badge = document.createElement('span');
@@ -477,34 +518,30 @@ document.addEventListener('DOMContentLoaded', () => {
       techTagsList.appendChild(badge);
     });
 
-    // Setup Like Button Action in Modal
-    // Clear previous event listener (cloning button is the cleanest way in Vanilla JS)
+    // Clear and reset like button action listener
     const newLikeBtn = likeBtn.cloneNode(true);
     likeBtn.parentNode.replaceChild(newLikeBtn, likeBtn);
     newLikeBtn.addEventListener('click', () => {
-      // Find card element in gallery grid and update its UI
-      const cardContainer = document.querySelector(`.gallery-card`); // simple fallbacks
-      const likesSpan = document.getElementById('like-count');
-      likeDoodle(doodle.id, likesSpan);
-      renderGallery(); // Syncs counts back to grid layout
+      doodle.likes++;
+      likeCountSpan.textContent = doodle.likes;
+      showToast(`Cosmic orbit count increased for "${doodle.title}"!`, 'success');
+      
+      // Update star node details
+      renderCelestialSky();
     });
 
-    // Show Lightbox with animations
+    // Show modal
     lightbox.classList.add('active');
 
-    // Close Lightbox listeners
     const closeBtn = document.getElementById('close-lightbox-btn');
     const overlay = document.getElementById('lightbox-close-overlay');
+    const closeModal = () => lightbox.classList.remove('active');
     
-    const closeLightbox = () => {
-      lightbox.classList.remove('active');
-    };
-    
-    closeBtn.onclick = closeLightbox;
-    overlay.onclick = closeLightbox;
+    closeBtn.onclick = closeModal;
+    overlay.onclick = closeModal;
   }
 
-  // --- INTERACTIVE SKETCHBOOK RESUME ---
+  // --- OBSERVATORY RESUME TABS ---
   function setupResumeTabs() {
     const tabs = document.querySelectorAll('.resume-tab');
     const contentPanel = document.getElementById('resume-tab-content');
@@ -532,7 +569,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Default Load Profile page
     loadTab('profile');
   }
 
@@ -540,7 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const panel = document.getElementById('resume-tab-content');
     panel.innerHTML = `
       <div class="profile-grid">
-        <div class="profile-avatar-box sketch-border">
+        <div class="profile-avatar-box space-border">
           ${RESUME_PROFILE.avatarSvg}
         </div>
         <div class="profile-details">
@@ -550,7 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <ul class="profile-quick-facts">
             ${RESUME_PROFILE.facts.map(fact => `
               <li>
-                <span class="bullet">☞</span>
+                <span class="bullet">✦</span>
                 <span class="fact-text">${fact}</span>
               </li>
             `).join('')}
@@ -560,53 +596,71 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
+  // Renders skills as glowing orbiting planet grids
   function renderSkillsTab() {
     const panel = document.getElementById('resume-tab-content');
+    
     panel.innerHTML = `
-      <div class="skills-grid">
-        <!-- Frontend Column -->
-        <div class="skills-column">
-          <h3 class="hand-drawn">Frontend Sketchpad</h3>
-          ${RESUME_SKILLS.frontend.map(skill => `
-            <div class="skill-item">
-              <div class="skill-info">
-                <span class="skill-name">${skill.name}</span>
-                <span class="skill-percentage hand-drawn">${skill.value}%</span>
-              </div>
-              <div class="skill-bar-outer">
-                <div class="skill-bar-inner" data-value="${skill.value}"></div>
-              </div>
-            </div>
-          `).join('')}
+      <div class="orbit-universe space-border">
+        <!-- Central Sun -->
+        <div class="orbit-core-sun" title="Astronomer Core (Bhavay)">
+          <span class="sun-label hand-drawn">Developer</span>
+          <span class="sun-label hand-drawn">Core</span>
         </div>
         
-        <!-- Backend Column -->
-        <div class="skills-column">
-          <h3 class="hand-drawn">Backend &amp; Logic</h3>
-          ${RESUME_SKILLS.backend.map(skill => `
-            <div class="skill-item">
-              <div class="skill-info">
-                <span class="skill-name">${skill.name}</span>
-                <span class="skill-percentage hand-drawn">${skill.value}%</span>
-              </div>
-              <div class="skill-bar-outer">
-                <div class="skill-bar-inner" data-value="${skill.value}"></div>
-              </div>
-            </div>
-          `).join('')}
+        <!-- Orbit rings background -->
+        <div class="orbit-path-ring ring-1"></div>
+        <div class="orbit-path-ring ring-2"></div>
+        <div class="orbit-path-ring ring-3"></div>
+        
+        <!-- Rotator Ring 1: Fast (Frontend Core) -->
+        <div class="orbit-rotator speed-fast">
+          <div class="orbit-planet-node planet-js" title="JavaScript">
+            <div class="planet-sphere type-js"></div>
+            <div class="planet-label hand-drawn">JavaScript<br><strong>92%</strong></div>
+          </div>
+          <div class="orbit-planet-node planet-canvas" title="Canvas &amp; SVGs">
+            <div class="planet-sphere type-git"></div>
+            <div class="planet-label hand-drawn">Canvas &amp; SVGs<br><strong>88%</strong></div>
+          </div>
+        </div>
+        
+        <!-- Rotator Ring 2: Medium (SaaS / Styling Frameworks) -->
+        <div class="orbit-rotator speed-medium">
+          <div class="orbit-planet-node planet-react" title="React / Next.js">
+            <div class="planet-sphere type-js"></div>
+            <div class="planet-label hand-drawn">React / Next.js<br><strong>85%</strong></div>
+          </div>
+          <div class="orbit-planet-node planet-css" title="CSS3 Animations">
+            <div class="planet-sphere type-css"></div>
+            <div class="planet-label hand-drawn">CSS &amp; Keyframes<br><strong>95%</strong></div>
+          </div>
+          <div class="orbit-planet-node planet-node" title="Node.js">
+            <div class="planet-sphere type-backend"></div>
+            <div class="planet-label hand-drawn">Node.js / Express<br><strong>80%</strong></div>
+          </div>
+        </div>
+        
+        <!-- Rotator Ring 3: Slow (System Core databases & versionings) -->
+        <div class="orbit-rotator speed-slow">
+          <div class="orbit-planet-node planet-db" title="SQL / NoSQL Databases">
+            <div class="planet-sphere type-backend"></div>
+            <div class="planet-label hand-drawn">DBs (Postgres/Mongo)<br><strong>75%</strong></div>
+          </div>
+          <div class="orbit-planet-node planet-api" title="API gateways (REST/GraphQL)">
+            <div class="planet-sphere type-backend"></div>
+            <div class="planet-label hand-drawn">REST / GraphQL APIs<br><strong>84%</strong></div>
+          </div>
+          <div class="orbit-planet-node planet-git" title="Git / Devops workflow">
+            <div class="planet-sphere type-git"></div>
+            <div class="planet-label hand-drawn">Git Versioning<br><strong>82%</strong></div>
+          </div>
         </div>
       </div>
     `;
-
-    // Trigger skills bar animations sequentially
-    setTimeout(() => {
-      panel.querySelectorAll('.skill-bar-inner').forEach(bar => {
-        const val = bar.getAttribute('data-value');
-        bar.style.width = `${val}%`;
-      });
-    }, 50);
   }
 
+  // Renders experience as milestone constellations
   function renderExperienceTab() {
     const panel = document.getElementById('resume-tab-content');
     panel.innerHTML = `
@@ -627,7 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
-  // --- MOCK CONTACT FORM SUBMISSION ---
+  // --- CONTACT SIGNAL FORM ---
   function setupContactForm() {
     const form = document.getElementById('contact-form');
     const status = document.getElementById('form-status');
@@ -635,28 +689,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      
       const submitBtn = form.querySelector('button[type="submit"]');
       const origText = submitBtn.innerHTML;
       
-      // Handwritten Loading Simulation
       submitBtn.disabled = true;
-      submitBtn.innerHTML = 'Writing Scribble... ✎';
+      submitBtn.innerHTML = 'Broadcasting signal... 📡';
       status.textContent = '';
 
       setTimeout(() => {
-        showToast('Message sent! Thanks for leaving a scribble.', 'success');
+        showToast('Telemetry signal broadcasted successfully!', 'success');
         submitBtn.disabled = false;
         submitBtn.innerHTML = origText;
-        status.innerHTML = '<span style="color:var(--ink-success)">✓ Scribble delivered to mailbox!</span>';
-        
+        status.innerHTML = '<span style="color:var(--ink-success)">✓ Transmission acknowledged by ground control!</span>';
         form.reset();
       }, 1500);
     });
   }
 
-  // --- FLOATING BACKGROUND DECORATIONS ---
-  // Subtly tilts background floating doodles in reaction to mouse coordinates
+  // --- FLOATING BACKGROUND INTERACTIVE DECORATION ---
   function setupFloatingDoodlesInteraction() {
     document.addEventListener('mousemove', (e) => {
       const doodles = document.querySelectorAll('.floating-doodle');
@@ -664,15 +714,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const mouseY = e.clientY / window.innerHeight - 0.5;
 
       doodles.forEach((doodle, idx) => {
-        const factor = (idx + 1) * 15;
+        const factor = (idx + 1) * 20;
         const dx = mouseX * factor;
         const dy = mouseY * factor;
-        doodle.style.transform = `translate(${dx}px, ${dy}px) rotate(${factor + (dx * 0.2)}deg)`;
+        doodle.style.transform = `translate(${dx}px, ${dy}px) rotate(${factor + (dx * 0.1)}deg)`;
       });
     });
   }
 
-  // --- TOAST NOTIFICATIONS ---
+  // --- TOASTS SYSTEM ---
   function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -680,29 +730,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
-    // Choose icon depending on type
     let icon = '★';
-    if (type === 'info') icon = '✎';
+    if (type === 'info') icon = '☄';
     if (type === 'danger') icon = '⚠';
 
     toast.innerHTML = `<span class="hand-drawn">${icon}</span> <span>${message}</span>`;
     container.appendChild(toast);
 
-    // Slide up / Fade in
-    setTimeout(() => {
-      toast.classList.add('show');
-    }, 10);
+    setTimeout(() => toast.classList.add('show'), 10);
 
-    // Fade out and remove
     setTimeout(() => {
       toast.classList.remove('show');
-      setTimeout(() => {
-        toast.remove();
-      }, 300);
+      setTimeout(() => toast.remove(), 300);
     }, 3000);
   }
 
-  // --- SUPABASE DATA UTILITIES ---
+  // --- SUPABASE DATABASE FLOWS ---
   function dataURLtoBlob(dataurl) {
     const arr = dataurl.split(',');
     const mime = arr[0].match(/:(.*?);/)[1];
@@ -731,27 +774,26 @@ document.addEventListener('DOMContentLoaded', () => {
           const { data: publicData } = supabase.storage.from('drawings').getPublicUrl(row.path);
           return {
             id: `db-doodle-${row.path.replace(/\//g, '_')}-${index}`,
-            title: row.caption || 'Untitled Sketch',
+            title: row.caption || 'Unnamed Star',
             category: 'user',
-            tag: 'Supabase Sketch',
+            tag: 'Supabase Star',
             date: row.created_at
               ? new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(new Date(row.created_at))
-              : "Recent",
-            likes: Math.floor(Math.random() * 20) + 5, // Random baseline likes
-            author: 'Guest Artist',
-            description: 'A doodle stored persistently in the Supabase PostgreSQL database and loaded in real-time.',
+              : "Recent Discovery",
+            likes: Math.floor(Math.random() * 20) + 5,
+            author: 'Guest Astronomer',
+            description: 'A user-forged constellation stored persistently in our Supabase space catalog.',
             techTags: ['Supabase DB', 'Supabase Storage', 'Canvas API'],
             imageSrc: publicData.publicUrl
           };
         });
         
-        // Merge Supabase doodles behind the preloaded portfolio items
         doodlesList = [...PORTFOLIO_DOODLES, ...dbDoodles];
-        renderGallery();
-        showToast("Loaded drawings from Supabase database!", "info");
+        renderCelestialSky();
+        showToast("Astronomical database loaded!", "info");
       }
     } catch (err) {
-      console.warn("Could not load drawings from Supabase database:", err);
+      console.warn("Could not retrieve space telemetry from Supabase:", err);
     }
   }
 });
