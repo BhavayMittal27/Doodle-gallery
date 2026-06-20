@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- CSS Stylesheet -->
-  <script type="module" crossorigin src="./assets/index-CZ27YIfd.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-Bwxm3ks_.css">
+  <script type="module" crossorigin src="./assets/index-CHrVtnt0.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-nBqX8Yrd.css">
 </head>
 <body class="theme-space">
 
@@ -58,16 +58,13 @@
       
       <nav class="main-nav">
         <ul>
-          <li><a href="#hero" class="nav-link active">Orbit</a></li>
-          <li><a href="#forge" class="nav-link">Star Forge</a></li>
-          <li><a href="#sky" class="nav-link">Celestial Sky</a></li>
+          <li><a href="#garden" class="nav-link active">Garden</a></li>
           <li><a href="#observatory" class="nav-link">Observatory Resume</a></li>
           <li><a href="#contact" class="nav-link">Signal</a></li>
         </ul>
       </nav>
 
       <div class="header-actions">
-        <!-- Visual details only, constellation theme is exclusively dark mode for maximum contrast -->
         <span class="space-status hand-drawn">🔴 System: Operational</span>
       </div>
     </div>
@@ -76,65 +73,61 @@
   <!-- Main Scroll Container -->
   <main class="content-container">
 
-    <!-- Hero / Landing Section -->
-    <section id="hero" class="hero-section page-section">
-      <div class="hero-content">
-        <div class="badge hand-drawn space-border">Stargazing Coordinates Online</div>
-        <h1 class="hero-title">
-          Forge your own <span class="highlight-text hand-drawn">Constellations</span>.<br>
-          Map them in the <span class="highlight-text hand-drawn">Infinity</span>.
-        </h1>
-        <p class="hero-desc">
-          Welcome to StellaPort. Draw stars, planets, or custom galaxies, cast them into our ever-expanding coordinate sky, and explore the orbital paths of my developer resume.
-        </p>
-        <div class="hero-buttons">
-          <a href="#forge" class="space-btn primary-btn hand-drawn">Forge a Star</a>
-          <a href="#sky" class="space-btn secondary-btn hand-drawn">View Celestial Sky</a>
-        </div>
-      </div>
-      
-      <!-- Interactive Starchart Widget -->
-      <div class="hero-showcase space-border">
-        <div class="showcase-header">
-          <span class="dot red"></span>
-          <span class="dot yellow"></span>
-          <span class="dot green"></span>
-          <span class="showcase-title hand-drawn">QuickForge.sys</span>
-        </div>
-        <div class="showcase-body">
-          <canvas id="hero-mini-canvas" width="400" height="300"></canvas>
-          <div class="canvas-instruction hand-drawn">Draw a star cluster above! Click to link nodes ✦</div>
-          <button id="clear-hero-canvas" class="mini-clear-btn hand-drawn">Wipe</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Star Forge (Drawing Canvas) Section -->
-    <section id="forge" class="forge-section page-section">
+    <!-- Unified Celestial Garden Section -->
+    <section id="garden" class="garden-section page-section">
       <div class="section-header text-center">
-        <h2 class="section-title hand-drawn">The Star Forge</h2>
-        <p class="section-subtitle">Scribble nebulas, comets, or complex star clusters. Once forged, publish them to align with our global starry constellation map.</p>
+        <h1 class="section-title hand-drawn">The Constellation Garden</h1>
+        <p class="section-subtitle">Draw stars, comets, or planets and cast them directly onto our floating space island below.</p>
       </div>
 
-      <div class="studio-grid">
-        <!-- Astronomical Board Canvas -->
-        <div class="canvas-board space-border-heavy">
-          <div class="astronomical-grid-overlay"></div>
-          <div class="notebook-rings">
-            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      <div class="garden-dashboard">
+        <!-- Floating Cosmic Island Column -->
+        <div class="island-card space-border-heavy">
+          <!-- Toolbar -->
+          <div class="island-toolbar">
+            <div class="filter-categories" id="filter-categories">
+              <button class="filter-btn active hand-drawn" data-filter="all">All</button>
+              <button class="filter-btn hand-drawn" data-filter="portfolio">Portfolio</button>
+              <button class="filter-btn hand-drawn" data-filter="user">Guest Stars</button>
+            </div>
+            <div class="search-box">
+              <input type="text" id="gallery-search" class="space-input hand-drawn" placeholder="🔍 Search stars...">
+            </div>
           </div>
-          <div class="canvas-container">
-            <canvas id="paint-canvas"></canvas>
+          
+          <div class="sky-instructions hand-drawn">🌌 Hover or click stars on the island to inspect them</div>
+
+          <!-- Island Viewport -->
+          <div class="island-viewport">
+            <!-- Bobbing Island Container -->
+            <div class="island-wrapper" id="island-wrapper">
+              <img src="./assets/cosmic_island-D7JktIeM.png" alt="Cosmic Space Island" class="island-img">
+              <!-- Scattered Constellation Nodes Layer -->
+              <div class="constellations-layer" id="constellations-layer"></div>
+            </div>
           </div>
+
+          <!-- Mobile trigger to open canvas panel modal -->
+          <button id="mobile-draw-btn" class="space-btn primary-btn hand-drawn mobile-only-btn">
+            ✨ Draw a Star
+          </button>
         </div>
 
-        <!-- Forge controls -->
-        <div class="controls-panel space-border">
-          <h3 class="panel-title hand-drawn">Celestial Forge Kit</h3>
+        <!-- Star Forge Drawing Canvas Column -->
+        <div class="controls-panel space-border" id="forge-panel">
+          <!-- Close drawer button for mobile screen mode -->
+          <button class="close-drawer-btn" id="close-drawer-btn" aria-label="Close drawing panel">&times;</button>
           
+          <h3 class="panel-title hand-drawn">Celestial Forge</h3>
+          
+          <div class="canvas-board space-border">
+            <div class="canvas-container">
+              <canvas id="paint-canvas"></canvas>
+            </div>
+          </div>
+
           <!-- Tool Options -->
           <div class="control-group">
-            <label class="control-label hand-drawn">Astronomical Tool</label>
             <div class="tool-selector">
               <button class="tool-btn active" data-tool="brush" title="Star Beam">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -142,13 +135,13 @@
                 </svg>
                 <span class="tool-text hand-drawn">Star Beam</span>
               </button>
-              <button class="tool-btn" data-tool="highlighter" title="Nebula Spray">
+              <button class="tool-btn" data-tool="highlighter" title="Nebula Dust">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                 </svg>
                 <span class="tool-text hand-drawn">Nebula Dust</span>
               </button>
-              <button class="tool-btn" data-tool="eraser" title="Void Dissolver">
+              <button class="tool-btn" data-tool="eraser" title="Void Eraser">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                   <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
@@ -166,89 +159,49 @@
             </div>
           </div>
 
-          <!-- Color Swatches -->
+          <!-- Color Swatches Swapper -->
           <div class="control-group">
-            <label class="control-label hand-drawn">Cosmic Ink</label>
             <div class="color-palette" id="color-palette">
               <!-- Rebuilt dynamically in JS -->
             </div>
             <div class="custom-color-picker">
               <input type="color" id="custom-color" value="#ffffff">
-              <label for="custom-color" class="hand-drawn">Starlight Spectrum</label>
+              <label for="custom-color" class="hand-drawn">Spectrum</label>
             </div>
           </div>
 
-          <!-- Size & Opacity -->
+          <!-- Size Width Selector -->
           <div class="control-group">
             <div class="slider-label">
-              <span class="hand-drawn">Star Beam Width</span>
+              <span class="hand-drawn">Beam Width</span>
               <span id="brush-size-val" class="hand-drawn">6px</span>
             </div>
             <input type="range" id="brush-size" min="1" max="50" value="6" class="space-slider">
           </div>
 
-          <div class="control-group">
-            <div class="slider-label">
-              <span class="hand-drawn">Gas Density</span>
-              <span id="brush-opacity-val" class="hand-drawn">100%</span>
-            </div>
-            <input type="range" id="brush-opacity" min="10" max="100" value="100" class="space-slider">
-          </div>
-
-          <!-- Actions -->
+          <!-- Actions Panel Buttons -->
           <div class="control-group action-group">
             <button id="undo-btn" class="space-btn secondary-btn flex-btn" title="Undo (Ctrl+Z)">
-              <span>↩</span> <span class="hand-drawn">Undo</span>
+              <span>↩</span>
             </button>
             <button id="redo-btn" class="space-btn secondary-btn flex-btn" title="Redo (Ctrl+Y)">
-              <span>↪</span> <span class="hand-drawn">Redo</span>
+              <span>↪</span>
             </button>
             <button id="clear-btn" class="space-btn danger-btn flex-btn" title="Vanish All">
-              <span>🗑</span> <span class="hand-drawn">Wipe</span>
+              <span>🗑</span>
             </button>
           </div>
 
-          <!-- Save/Publish -->
+          <!-- Save/Publish Form -->
           <div class="save-actions space-border-top">
-            <input type="text" id="doodle-title" class="space-input hand-drawn" placeholder="Name your constellation..." maxlength="25">
+            <input type="text" id="doodle-title" class="space-input hand-drawn" placeholder="Name your star..." maxlength="25">
             <button id="save-gallery-btn" class="space-btn primary-btn full-btn hand-drawn">
-              <span>✨</span> Post to Celestial Sky
+              <span>✨</span> Cast Star
             </button>
             <button id="download-btn" class="space-btn secondary-btn full-btn hand-drawn">
               <span>↓</span> Save PNG
             </button>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Interactive Celestial Sky (Gallery) Section -->
-    <section id="sky" class="gallery-section page-section">
-      <div class="section-header text-center">
-        <h2 class="section-title hand-drawn">The Celestial Sky</h2>
-        <p class="section-subtitle">Grab, drag, and pan around the infinite star field coordinates to inspect newly born nebulae and star clusters drawn by other explorers.</p>
-      </div>
-
-      <!-- Toolbar -->
-      <div class="gallery-toolbar space-border">
-        <div class="filter-categories" id="filter-categories">
-          <button class="filter-btn active hand-drawn" data-filter="all">All Stars</button>
-          <button class="filter-btn hand-drawn" data-filter="portfolio">Design Clusters</button>
-          <button class="filter-btn hand-drawn" data-filter="user">User Constellations</button>
-        </div>
-        <div class="search-box">
-          <input type="text" id="gallery-search" class="space-input hand-drawn" placeholder="🔍 Search astronomical names...">
-        </div>
-      </div>
-
-      <!-- Viewport for Panning the Infinite Constellation Map -->
-      <div class="sky-map-viewport space-border-heavy" id="sky-map-viewport">
-        <div class="sky-instructions hand-drawn">🌌 Drag/Pan to explore the sky map &bull; Hover/Click stars to inspect</div>
-        <div class="sky-map-container" id="sky-map-container">
-          <!-- Sky grid coordinates markings -->
-          <div class="sky-grid-lines"></div>
-          <!-- Target constellations populated dynamically -->
-          <div class="constellations-layer" id="constellations-layer"></div>
         </div>
       </div>
     </section>
