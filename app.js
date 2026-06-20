@@ -1,25 +1,24 @@
 /* ==========================================================================
-   CONSTELLATION APPS CONTROLLER (app.js)
+   ANNA'S SECRET GARDEN CONTROLLER (app.js)
    ========================================================================== */
 
 import { supabase } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // --- STATE MANAGEMENT ---
-  let doodlesList = []; // Clean slate, only user drawings from Supabase
+  let flowersList = []; // Clean slate, only user drawings from Supabase
   let currentFilter = 'all';
   
   // Canvas Instantiation
   const mainCanvas = new SketchCanvas('paint-canvas');
 
-  // --- PALETTE DEFINITIONS (Celestial Neon Colors) ---
-  const CELESTIAL_PALETTE = [
-    { name: 'Comet White', hex: '#ffffff' },
-    { name: 'Sun Gold', hex: '#ffd740' },
-    { name: 'Cosmic Cyan', hex: '#00e5ff' },
-    { name: 'Nebula Pink', hex: '#ff4081' },
-    { name: 'Stardust Violet', hex: '#e040fb' },
-    { name: 'Aurora Teal', hex: '#1de9b6' }
+  // --- PALETTE DEFINITIONS (Garden Colors from annasgarden.dev) ---
+  const GARDEN_PALETTE = [
+    { name: 'Crimson Red', hex: '#E74C3C' },
+    { name: 'Sunset Orange', hex: '#FF8C42' },
+    { name: 'Marigold Yellow', hex: '#FFD166' },
+    { name: 'Cherry Pink', hex: '#FFB3C1' },
+    { name: 'Leaf Green', hex: '#3C7A3B' }
   ];
 
   // --- INITIALIZATION ---
@@ -30,29 +29,21 @@ document.addEventListener('DOMContentLoaded', () => {
     setupColorPalette();
     setupCanvasControls();
     setupMobileDrawer();
-    renderCelestialSky();
+    renderGardenSky();
     setupGalleryFilters();
-    setupFloatingDoodlesInteraction();
-    setupOnboarding();
     setupGalleryToolbar();
     
-    // Listen to canvas change to toggle Place button disabled state
+    // Listen to canvas change to toggle Plant button disabled state
     const saveBtn = document.getElementById('save-gallery-btn');
     const paintCanvas = document.getElementById('paint-canvas');
     if (paintCanvas && saveBtn) {
       paintCanvas.addEventListener('canvas-changed', (e) => {
         saveBtn.disabled = !e.detail.hasDrawn;
-        
-        // Also enable/disable undo button
-        const undoBtn = document.getElementById('undo-btn');
-        if (undoBtn) {
-          undoBtn.disabled = mainCanvas.historyIndex <= 0;
-        }
       });
     }
 
     // Load drawings from Supabase in background
-    fetchSupabaseDoodles();
+    fetchSupabaseFlowers();
   }
 
   // --- CELESTIAL NAV (OVERLAY TOGGLES, NO BODY SCROLL) ---
@@ -60,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.nav-link-btn');
     const galleryOverlay = document.getElementById('gallery-archive');
     const closeGalleryBtn = document.getElementById('close-gallery-btn');
-    const floatingBtn = document.querySelector('.floating-gallery-btn');
+    const mobileGalleryBtn = document.getElementById('mobile-gallery-btn');
 
     function openGallery() {
       if (galleryOverlay) {
@@ -68,12 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
         trapFocus(galleryOverlay);
         document.body.style.overflow = 'hidden';
       }
-      navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === '#gallery-archive') {
-          link.classList.add('active');
-        }
-      });
     }
 
     function closeGallery() {
@@ -82,36 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
         releaseFocus();
         document.body.style.overflow = '';
       }
-      navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === '#space') {
-          link.classList.add('active');
-        }
-      });
     }
 
-    // Intercept nav links clicks
-    navLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const target = link.getAttribute('href');
-        if (target === '#gallery-archive') {
-          openGallery();
-        } else if (target === '#about') {
-          closeGallery();
-          const aboutSection = document.getElementById('about');
-          if (aboutSection) aboutSection.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          closeGallery();
-          const spaceSection = document.getElementById('space');
-          if (spaceSection) spaceSection.scrollIntoView({ behavior: 'smooth' });
-        }
-      });
-    });
-
-    // Intercept floating button click
-    if (floatingBtn) {
-      floatingBtn.addEventListener('click', (e) => {
+    // Fixed bottom right button click
+    if (mobileGalleryBtn) {
+      mobileGalleryBtn.addEventListener('click', (e) => {
         e.preventDefault();
         openGallery();
       });
@@ -123,57 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         closeGallery();
       });
     }
-
-    // Scroll Spy
-    const sections = document.querySelectorAll('section');
-    window.addEventListener('scroll', () => {
-      if (galleryOverlay && galleryOverlay.classList.contains('active')) return;
-      
-      let currentSectionId = 'space';
-      const scrollPos = window.scrollY + 160;
-      
-      sections.forEach(sec => {
-        if (sec.id === 'gallery-archive') return;
-        const secTop = sec.offsetTop;
-        const secHeight = sec.offsetHeight;
-        if (scrollPos >= secTop && scrollPos < secTop + secHeight) {
-          currentSectionId = sec.id;
-        }
-      });
-      
-      navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${currentSectionId}`) {
-          link.classList.add('active');
-        }
-      });
-    });
-  }
-
-  // Onboarding Setup
-  function setupOnboarding() {
-    const banner = document.getElementById('onboarding-banner');
-    const closeBtn = document.getElementById('close-onboarding-btn');
-    if (!banner || !closeBtn) return;
-
-    if (!localStorage.getItem('doodle_gallery_onboarded')) {
-      banner.classList.add('active');
-      setTimeout(() => trapFocus(banner), 100);
-    }
-
-    closeBtn.addEventListener('click', () => {
-      banner.classList.remove('active');
-      localStorage.setItem('doodle_gallery_onboarded', 'true');
-      releaseFocus();
-      
-      // Open Draw drawer panel
-      const drawer = document.getElementById('forge-panel');
-      if (drawer) {
-        drawer.classList.add('active');
-        const firstInput = drawer.querySelector('input');
-        if (firstInput) setTimeout(() => firstInput.focus(), 100);
-      }
-    });
   }
 
   // --- PALETTE UI GENERATION ---
@@ -182,16 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!paletteContainer) return;
     paletteContainer.innerHTML = '';
 
-    // Set initial canvas drawing color to the first palette item
-    if (CELESTIAL_PALETTE.length > 0) {
-      mainCanvas.currentColor = CELESTIAL_PALETTE[0].hex;
-    }
+    // Set initial canvas drawing color
+    mainCanvas.currentColor = GARDEN_PALETTE[0].hex;
 
-    CELESTIAL_PALETTE.forEach((color, idx) => {
+    GARDEN_PALETTE.forEach((color, idx) => {
       const bubble = document.createElement('button');
       bubble.className = `color-bubble ${idx === 0 ? 'active' : ''}`;
       bubble.style.backgroundColor = color.hex;
-      bubble.style.color = color.hex; // sets glow shadow color in css
       bubble.title = color.name;
       bubble.setAttribute('aria-label', color.name);
 
@@ -199,100 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
         paletteContainer.querySelectorAll('.color-bubble').forEach(b => b.classList.remove('active'));
         bubble.classList.add('active');
         mainCanvas.currentColor = color.hex;
-        
-        const customColor = document.getElementById('custom-color');
-        if (customColor) customColor.value = color.hex;
       });
 
       paletteContainer.appendChild(bubble);
     });
-
-    const customColor = document.getElementById('custom-color');
-    if (customColor) {
-      customColor.value = CELESTIAL_PALETTE[0].hex;
-      customColor.addEventListener('input', (e) => {
-        paletteContainer.querySelectorAll('.color-bubble').forEach(b => b.classList.remove('active'));
-        mainCanvas.currentColor = e.target.value;
-      });
-    }
-  }
-
-  // --- SPACE ART CLASSIFIER / MODERATION ---
-  function classifyCosmicDrawing() {
-    const canvas = document.getElementById('paint-canvas');
-    if (!canvas) return { isValid: false, reason: 'No canvas found.' };
-    
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-    
-    // Get image data to count active pixels
-    const imgData = ctx.getImageData(0, 0, width, height);
-    const data = imgData.data;
-    
-    let activePixels = 0;
-    let minX = width, maxX = 0;
-    let minY = height, maxY = 0;
-    
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const idx = (y * width + x) * 4;
-        const alpha = data[idx + 3];
-        if (alpha > 10) { // non-transparent pixels
-          activePixels++;
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
-      }
-    }
-    
-    // 1. Check if user has drawn anything
-    if (activePixels === 0) {
-      return { isValid: false, reason: "Please draw something first!" };
-    }
-    
-    const dpr = window.devicePixelRatio || 1;
-    // 2. Check if too small
-    if (activePixels < 25 * dpr * dpr) {
-      return { isValid: false, reason: "not a space shit! That's too small to be a constellation." };
-    }
-    
-    // 3. Check if too dense (just scribbles)
-    const totalPixels = width * height;
-    const density = activePixels / totalPixels;
-    if (density > 0.40) {
-      return { isValid: false, reason: "not a space shit! That's just a black hole of scribbles." };
-    }
-    
-    const boxW = maxX - minX;
-    const boxH = maxY - minY;
-    const aspectRatio = boxW / boxH;
-    
-    // 4. Bounding box size check
-    if (boxW < 12 * dpr && boxH < 12 * dpr) {
-      return { isValid: false, reason: "not a space shit! That's just a tiny speck." };
-    }
-    
-    // 5. Sun check (Cannot draw another sun)
-    const titleInput = document.getElementById('doodle-title');
-    const title = (titleInput ? titleInput.value : '').toLowerCase().trim();
-    
-    if (title.includes('sun') || title === 'sol' || title.includes('sol ')) {
-      return { isValid: false, reason: "no 2 suns mf" };
-    }
-    
-    // 6. Keyword analysis (excludes 'sun' and 'sol' to enforce specific warning above)
-    const spaceKeywords = ['star', 'planet', 'ufo', 'alien', 'comet', 'galaxy', 'moon', 'meteor', 'rocket', 'saturn', 'mars', 'jupiter', 'constellation', 'nebula', 'asteroid', 'orbit', 'spaceship', 'cosmos', 'saucer', 'shuttle', 'nova', 'supernova', 'zenith'];
-    const hasSpaceKeyword = spaceKeywords.some(keyword => title.includes(keyword));
-    
-    // If aspect ratio is extremely narrow (e.g. drawing just a single vertical or horizontal slash)
-    if ((aspectRatio > 6 || aspectRatio < 0.17) && !hasSpaceKeyword) {
-      return { isValid: false, reason: "not a space shit! That is just a straight line." };
-    }
-    
-    return { isValid: true };
   }
 
   // --- DRAWING TOOLKIT INTERACTIONS ---
@@ -306,25 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    const undoBtn = document.getElementById('undo-btn');
-    if (undoBtn) {
-      undoBtn.addEventListener('click', () => {
-        mainCanvas.undo();
-        undoBtn.disabled = mainCanvas.historyIndex <= 0;
-      });
-    }
-
     // Save/Post to Doodle Garden Island
     document.getElementById('save-gallery-btn').addEventListener('click', async () => {
       if (!mainCanvas.hasDrawn) {
         showToast("Draw something first!", "danger");
-        return;
-      }
-
-      // Check if the drawing is valid space art
-      const check = classifyCosmicDrawing();
-      if (!check.isValid) {
-        showToast(check.reason, "danger");
         return;
       }
 
@@ -337,12 +138,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const description = descInput.value.trim();
 
       if (!title) {
-        showToast("Please enter a title for your doodle!", "danger");
+        showToast("Please enter a title for your flower!", "danger");
         titleInput.focus();
         return;
       }
       if (!description) {
-        showToast("Please enter a description for your doodle!", "danger");
+        showToast("Please describe your flower!", "danger");
         descInput.focus();
         return;
       }
@@ -350,9 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const saveBtn = document.getElementById('save-gallery-btn');
       const originalText = saveBtn.innerHTML;
       
-      // Get the image merged with space texture
-      const mergedImgData = mainCanvas.getMergedDataURL(true); // always dark celestial
-      let imageSrc = mergedImgData;
+      // Get the transparent PNG image directly from the canvas
+      const transparentImgData = mainCanvas.canvas.toDataURL();
+      let imageSrc = transparentImgData;
 
       const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       const filename = `${Date.now()}-${randomId}.png`;
@@ -362,9 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (supabase) {
         try {
           saveBtn.disabled = true;
-          saveBtn.innerHTML = `<span>⏳</span> Beaming Star...`;
+          saveBtn.innerHTML = `<span>⏳</span> Planting...`;
           
-          const blob = dataURLtoBlob(mergedImgData);
+          const blob = dataURLtoBlob(transparentImgData);
           
           const { error: uploadError } = await supabase.storage
              .from('drawings')
@@ -384,36 +185,33 @@ document.addEventListener('DOMContentLoaded', () => {
              
           imageSrc = publicData.publicUrl;
           
-          showToast(`Successfully birthed "${title}" in the garden!`, 'success');
+          showToast(`Successfully planted "${title}" in the garden!`, 'success');
         } catch (err) {
-          console.error("Supabase stargaze upload failed, saving locally:", err);
-          showToast("Failed to beam online. Saved in local session.", "danger");
+          console.error("Supabase plant upload failed, saving locally:", err);
+          showToast("Failed to plant online. Saved in local session.", "danger");
         } finally {
           saveBtn.disabled = false;
           saveBtn.innerHTML = originalText;
         }
       } else {
-        showToast(`Successfully birthed "${title}" in local session!`, 'success');
+        showToast(`Successfully planted "${title}" in local session!`, 'success');
       }
 
-      const newDoodle = {
+      const newFlower = {
         id: newId,
         title: title,
         category: 'user',
-        tag: supabase ? 'Supabase Doodle' : 'Guest Doodle',
+        tag: 'Guest Flower',
         date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         likes: 0,
         author: author,
         description: description,
-        techTags: supabase 
-           ? ['Supabase DB', 'Supabase Storage', 'Canvas API']
-           : ['Canvas API', 'Telemetry Saved'],
         imageSrc: imageSrc
       };
 
       // Add to list and re-render
-      doodlesList.unshift(newDoodle);
-      renderCelestialSky();
+      flowersList.unshift(newFlower);
+      renderGardenSky();
       
       // Reset controls
       titleInput.value = '';
@@ -426,15 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const drawer = document.getElementById('forge-panel');
       if (drawer) {
         drawer.classList.remove('active');
+        document.body.style.overflow = '';
       }
-
-      // Scroll to space dashboard
-      document.getElementById('space').scrollIntoView({ behavior: 'smooth' });
-      
-      // Pulse the new star
-      setTimeout(() => {
-        focusViewportOnStar(newId);
-      }, 500);
     });
   }
 
@@ -455,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
           unsavedModal.classList.add('active');
           trapFocus(unsavedModal);
         } else {
-          if (confirm("You have unsaved work. Discard and close?")) {
+          if (confirm("You have unsaved drawings. Discard and close?")) {
             closeDrawer();
           }
         }
@@ -511,84 +302,55 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Pulses a newly created star node
-  function focusViewportOnStar(starId) {
-    const node = document.querySelector(`[data-star-id="${starId}"]`);
-    if (!node) return;
-
-    // Briefly trigger starlight pulse ring to identify the node
-    const pulseRing = node.querySelector('.star-pulse-ring');
-    if (pulseRing) {
-      pulseRing.style.animationDuration = '0.5s';
-      setTimeout(() => {
-        pulseRing.style.animationDuration = '2.2s';
-      }, 1500);
-    }
-  }
-
-  // --- STAR POSITIONING & RENDERING ON ISLAND ---
-  // Generates deterministic coordinates forming an orbit around the central sun
+  // --- COORDINATE PLACEMENT ON THE GRASS ---
   function getCoordinatesForId(id) {
     let hash = 0;
     for (let i = 0; i < id.length; i++) {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
     
-    // Scatter coordinates pseudo-randomly across the entire sky viewport (12% to 88% on X, 12% to 82% on Y)
-    let x = 12 + (Math.abs(hash) % 76);
-    let y = 12 + (Math.abs(hash * 37) % 70);
-    
-    // Deterministically push coordinates away if they overlap the central sun area
-    // Sun bounding box roughly: X in [38, 62], Y in [32, 68]
-    if (x >= 38 && x <= 62 && y >= 32 && y <= 68) {
-      if (hash % 2 === 0) {
-        // Push horizontally away from the center
-        x = x < 50 ? x - 25 : x + 25;
-      } else {
-        // Push vertically away from the center
-        y = y < 50 ? y - 25 : y + 25;
-      }
-      // Clamp coordinates to ensure they remain inside viewport boundaries
-      x = Math.max(12, Math.min(88, x));
-      y = Math.max(12, Math.min(82, y));
-    }
+    // Map flower coordinates specifically to the grassy island surface
+    // X between 22% and 78% (centered width on the grass)
+    // Y between 24% and 56% (upper middle height on the grass platform)
+    const x = 22 + (Math.abs(hash) % 56);
+    const y = 24 + (Math.abs(hash * 37) % 32);
     
     return { x, y };
   }
 
-  function renderCelestialSky() {
+  function renderGardenSky() {
     const layer = document.getElementById('constellations-layer');
     if (!layer) return;
     layer.innerHTML = '';
 
-    const searchQuery = document.getElementById('gallery-search').value.toLowerCase().trim();
+    const searchQuery = document.getElementById('gallery-search') 
+      ? document.getElementById('gallery-search').value.toLowerCase().trim() 
+      : '';
 
-    // 1. Render nodes overlaying the central floating island
-    const filtered = doodlesList.filter(item => {
-      const matchesCategory = (currentFilter === 'all' || item.category === currentFilter);
+    // 1. Render transparent flowers directly on the bobbing island image
+    const filtered = flowersList.filter(item => {
       const matchesSearch = item.title.toLowerCase().includes(searchQuery) ||
                             (item.description && item.description.toLowerCase().includes(searchQuery)) ||
-                            item.techTags.some(t => t.toLowerCase().includes(searchQuery));
-      return matchesCategory && matchesSearch;
+                            item.author.toLowerCase().includes(searchQuery);
+      return matchesSearch;
     });
 
-    filtered.forEach(doodle => {
-      const coords = getCoordinatesForId(doodle.id);
+    filtered.forEach(flower => {
+      const coords = getCoordinatesForId(flower.id);
       
       const node = document.createElement('div');
-      node.className = `constellation-node type-${doodle.category}`;
-      node.setAttribute('data-star-id', doodle.id);
+      node.className = `constellation-node type-${flower.category || 'user'}`;
+      node.setAttribute('data-star-id', flower.id);
       node.style.left = `${coords.x}%`;
       node.style.top = `${coords.y}%`;
 
+      // Set smooth floating animations
       node.style.setProperty('--float-duration', `${4 + (Math.abs(coords.x + coords.y) % 5)}s`);
       node.style.setProperty('--float-delay', `${-(Math.abs(coords.x * coords.y) % 8)}s`);
 
       let mediaContent = '';
-      if (doodle.svg) {
-        mediaContent = doodle.svg;
-      } else if (doodle.imageSrc) {
-        mediaContent = `<img src="${doodle.imageSrc}" alt="${doodle.title}" loading="lazy">`;
+      if (flower.imageSrc) {
+        mediaContent = `<img src="${flower.imageSrc}" alt="${flower.title}" loading="lazy">`;
       }
 
       node.innerHTML = `
@@ -596,15 +358,15 @@ document.addEventListener('DOMContentLoaded', () => {
           ${mediaContent}
         </div>
         
-        <div class="star-tooltip space-border">
-          <div class="tooltip-title hand-drawn">${doodle.title}</div>
-          <div class="tooltip-meta">By ${doodle.author}</div>
+        <div class="star-tooltip">
+          <div class="tooltip-title hand-drawn">${flower.title}</div>
+          <div class="tooltip-meta">By ${flower.author}</div>
         </div>
       `;
 
       node.addEventListener('click', (e) => {
         e.stopPropagation();
-        openLightbox(doodle);
+        openLightbox(flower);
       });
 
       layer.appendChild(node);
@@ -619,16 +381,13 @@ document.addEventListener('DOMContentLoaded', () => {
         ? document.getElementById('archive-search').value.toLowerCase().trim() 
         : '');
       
-      // Filter list for catalog grid specifically
-      let archiveFiltered = doodlesList.filter(item => {
-        const matchesCategory = (currentFilter === 'all' || item.category === currentFilter);
+      let archiveFiltered = flowersList.filter(item => {
         const matchesSearch = item.title.toLowerCase().includes(archiveSearchQuery) ||
                               item.author.toLowerCase().includes(archiveSearchQuery) ||
                               (item.description && item.description.toLowerCase().includes(archiveSearchQuery));
-        return matchesCategory && matchesSearch;
+        return matchesSearch;
       });
 
-      // Sort list for catalog grid specifically
       const sortVal = (document.getElementById('archive-sort') 
         ? document.getElementById('archive-sort').value 
         : 'newest');
@@ -651,15 +410,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      archiveFiltered.forEach(doodle => {
+      archiveFiltered.forEach(flower => {
         const card = document.createElement('div');
         card.className = 'archive-card';
 
         let mediaContent = '';
-        if (doodle.svg) {
-          mediaContent = doodle.svg;
-        } else if (doodle.imageSrc) {
-          mediaContent = `<img src="${doodle.imageSrc}" alt="${doodle.title}" loading="lazy">`;
+        if (flower.imageSrc) {
+          mediaContent = `<img src="${flower.imageSrc}" alt="${flower.title}" loading="lazy">`;
         }
 
         card.innerHTML = `
@@ -667,12 +424,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ${mediaContent}
           </div>
           <div class="archive-info">
-            <h4 class="archive-title hand-drawn">${doodle.title}</h4>
-            <div class="archive-meta">By ${doodle.author} &bull; ${doodle.date}</div>
+            <h4 class="archive-title hand-drawn">${flower.title}</h4>
+            <div class="archive-meta">By ${flower.author} &bull; ${flower.date}</div>
           </div>
           <div class="archive-footer">
             <button class="archive-btn like-btn" data-action="like">
-              <span>♥</span> <span class="like-count-val">${doodle.likes}</span>
+              <span>♥</span> <span class="like-count-val">${flower.likes}</span>
             </button>
             <button class="archive-btn" data-action="inspect">
               <span>🔍</span> Inspect
@@ -684,20 +441,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const likeBtn = card.querySelector('[data-action="like"]');
         likeBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          doodle.likes++;
-          card.querySelector('.like-count-val').textContent = doodle.likes;
-          showToast(`Liked "${doodle.title}"!`, 'success');
-          renderCelestialSky();
+          flower.likes++;
+          card.querySelector('.like-count-val').textContent = flower.likes;
+          showToast(`Liked "${flower.title}"!`, 'success');
+          renderGardenSky();
         });
 
         const inspectBtn = card.querySelector('[data-action="inspect"]');
         inspectBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          openLightbox(doodle);
+          openLightbox(flower);
         });
 
         card.addEventListener('click', () => {
-          openLightbox(doodle);
+          openLightbox(flower);
         });
 
         archiveGrid.appendChild(card);
@@ -706,20 +463,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setupGalleryFilters() {
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    filterBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
-        renderCelestialSky();
-      });
-    });
-
     const searchInput = document.getElementById('gallery-search');
     if (searchInput) {
       searchInput.addEventListener('input', () => {
-        renderCelestialSky();
+        renderGardenSky();
       });
     }
   }
@@ -732,13 +479,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (archiveSearch) {
       archiveSearch.addEventListener('input', () => {
-        renderCelestialSky();
+        renderGardenSky();
       });
     }
 
     if (archiveSort) {
       archiveSort.addEventListener('change', () => {
-        renderCelestialSky();
+        renderGardenSky();
       });
     }
 
@@ -751,13 +498,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const drawer = document.getElementById('forge-panel');
         if (drawer) drawer.classList.add('active');
-        document.getElementById('space').scrollIntoView({ behavior: 'smooth' });
       });
     }
   }
 
   // --- LIGHTBOX FLOWS ---
-  function openLightbox(doodle) {
+  function openLightbox(flower) {
     const lightbox = document.getElementById('doodle-lightbox');
     const mediaContainer = document.getElementById('lightbox-media-container');
     const tagSpan = document.getElementById('lightbox-tag');
@@ -765,60 +511,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const authorSpan = document.getElementById('lightbox-author');
     const dateSpan = document.getElementById('lightbox-date');
     const descP = document.getElementById('lightbox-description');
-    const techTagsList = document.getElementById('lightbox-tech-tags');
     const downloadBtn = document.getElementById('lightbox-download');
     const likeBtn = document.getElementById('lightbox-like');
     const likeCountSpan = document.getElementById('like-count');
 
     // Populate media
     mediaContainer.innerHTML = '';
-    if (doodle.svg) {
-      mediaContainer.innerHTML = doodle.svg;
-    } else if (doodle.imageSrc) {
-      mediaContainer.innerHTML = `<img src="${doodle.imageSrc}" alt="${doodle.title}">`;
+    if (flower.imageSrc) {
+      mediaContainer.innerHTML = `<img src="${flower.imageSrc}" alt="${flower.title}">`;
     }
 
-    // Set Download Log Link to download log JSON file
+    // Set Download Log Link
     const logData = {
-      title: doodle.title,
-      author: doodle.author,
-      date: doodle.date,
-      likes: doodle.likes,
-      description: doodle.description || 'A user-forged doodle.',
-      techTags: doodle.techTags,
-      imageSrc: doodle.imageSrc
+      title: flower.title,
+      author: flower.author,
+      date: flower.date,
+      likes: flower.likes,
+      description: flower.description || 'A planted flower.',
+      imageSrc: flower.imageSrc
     };
     const jsonBlob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
     downloadBtn.href = URL.createObjectURL(jsonBlob);
-    downloadBtn.download = `${doodle.title.replace(/\s+/g, '_')}_log.json`;
+    downloadBtn.download = `${flower.title.replace(/\s+/g, '_')}_log.json`;
 
     // Details text
-    tagSpan.textContent = doodle.tag;
-    titleHeader.textContent = doodle.title;
-    authorSpan.textContent = doodle.author;
-    dateSpan.textContent = doodle.date;
-    descP.textContent = doodle.description || 'No description provided.';
-    likeCountSpan.textContent = doodle.likes;
+    tagSpan.textContent = 'Flower';
+    titleHeader.textContent = flower.title;
+    authorSpan.textContent = flower.author;
+    dateSpan.textContent = flower.date;
+    descP.textContent = flower.description || 'No description provided.';
+    likeCountSpan.textContent = flower.likes;
 
-    // Tech tags
-    techTagsList.innerHTML = '';
-    doodle.techTags.forEach(tag => {
-      const badge = document.createElement('span');
-      badge.className = 'tech-tag hand-drawn';
-      badge.textContent = tag;
-      techTagsList.appendChild(badge);
-    });
-
-    // Clear and reset like button action listener
+    // Reset like button action listener
     const newLikeBtn = likeBtn.cloneNode(true);
     likeBtn.parentNode.replaceChild(newLikeBtn, likeBtn);
     newLikeBtn.addEventListener('click', () => {
-      doodle.likes++;
-      likeCountSpan.textContent = doodle.likes;
-      showToast(`Liked "${doodle.title}"!`, 'success');
-      
-      // Update star node details
-      renderCelestialSky();
+      flower.likes++;
+      likeCountSpan.textContent = flower.likes;
+      showToast(`Liked "${flower.title}"!`, 'success');
+      renderGardenSky();
     });
 
     // Show modal
@@ -846,12 +577,8 @@ document.addEventListener('DOMContentLoaded', () => {
     activeFocusTrap = modal;
 
     // Disable main background elements for screen-readers
-    const container = document.querySelector('.content-container');
-    const nav = document.querySelector('.app-nav');
-    const footer = document.querySelector('.app-footer');
+    const container = document.querySelector('.garden-wrapper-root');
     if (container) container.setAttribute('inert', '');
-    if (nav && modal.id !== 'gallery-archive') nav.setAttribute('inert', '');
-    if (footer) footer.setAttribute('inert', '');
     modal.removeAttribute('inert');
 
     const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
@@ -885,40 +612,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!activeFocusTrap) return;
 
     // Enable main background elements
-    const container = document.querySelector('.content-container');
-    const nav = document.querySelector('.app-nav');
-    const footer = document.querySelector('.app-footer');
+    const container = document.querySelector('.garden-wrapper-root');
     if (container) container.removeAttribute('inert');
-    if (nav) nav.removeAttribute('inert');
-    if (footer) footer.removeAttribute('inert');
 
     activeFocusTrap.removeEventListener('keydown', activeFocusTrap._focusTrapListener);
     delete activeFocusTrap._focusTrapListener;
     
-    const prevTrap = activeFocusTrap;
     activeFocusTrap = null;
 
     if (previousActiveElement) {
       previousActiveElement.focus();
     }
-  }
-
-
-
-  // --- FLOATING BACKGROUND INTERACTIVE DECORATION ---
-  function setupFloatingDoodlesInteraction() {
-    document.addEventListener('mousemove', (e) => {
-      const doodles = document.querySelectorAll('.floating-doodle');
-      const mouseX = e.clientX / window.innerWidth - 0.5;
-      const mouseY = e.clientY / window.innerHeight - 0.5;
-
-      doodles.forEach((doodle, idx) => {
-        const factor = (idx + 1) * 20;
-        const dx = mouseX * factor;
-        const dy = mouseY * factor;
-        doodle.style.transform = `translate(${dx}px, ${dy}px) rotate(${factor + (dx * 0.1)}deg)`;
-      });
-    });
   }
 
   // --- TOASTS SYSTEM ---
@@ -929,8 +633,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
-    let icon = '★';
-    if (type === 'info') icon = '☄';
+    let icon = '🌱';
+    if (type === 'info') icon = '🌼';
     if (type === 'danger') icon = '⚠';
 
     toast.innerHTML = `<span class="hand-drawn">${icon}</span> <span>${message}</span>`;
@@ -957,16 +661,16 @@ document.addEventListener('DOMContentLoaded', () => {
     return new Blob([u8arr], { type: mime });
   }
 
-  async function fetchSupabaseDoodles() {
+  async function fetchSupabaseFlowers() {
     if (!supabase) return;
     try {
       let query = supabase.from('drawings').select('path, caption, flagged, created_at, author, description');
-      let { data, error } = await query.order('created_at', { ascending: false }).limit(40);
+      let { data, error } = await query.order('created_at', { ascending: false }).limit(60);
       
       if (error && (error.message.includes('column') || error.code === 'PGRST204')) {
-        console.warn("Table does not have new author/description columns yet. Querying standard fields...");
+        console.warn("Table does not have columns yet, trying fallback...");
         const fallbackQuery = supabase.from('drawings').select('path, caption, flagged, created_at');
-        const fallbackRes = await fallbackQuery.order('created_at', { ascending: false }).limit(40);
+        const fallbackRes = await fallbackQuery.order('created_at', { ascending: false }).limit(60);
         data = fallbackRes.data;
         error = fallbackRes.error;
       }
@@ -974,30 +678,29 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        const dbDoodles = data.map((row) => {
+        const dbFlowers = data.map((row) => {
           const { data: publicData } = supabase.storage.from('drawings').getPublicUrl(row.path);
           return {
             id: `db-doodle-${row.path.replace(/\//g, '_')}`,
-            title: row.caption || 'Unnamed Doodle',
+            title: row.caption || 'Unnamed Flower',
             category: 'user',
-            tag: 'Supabase Doodle',
+            tag: 'Planted Flower',
             date: row.created_at
               ? new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(new Date(row.created_at))
-              : "Recent Discovery",
+              : "Recent Plant",
             likes: Math.floor(Math.random() * 20) + 5,
             author: row.author || 'Anonymous',
-            description: row.description || 'A user-forged doodle stored persistently in our Supabase gallery.',
-            techTags: ['Supabase DB', 'Supabase Storage', 'Canvas API'],
+            description: row.description || 'A flower planted persistently in our garden catalog.',
             imageSrc: publicData.publicUrl
           };
         });
         
-        doodlesList = [...dbDoodles];
-        renderCelestialSky();
-        showToast("Doodle gallery database loaded!", "info");
+        flowersList = [...dbFlowers];
+        renderGardenSky();
+        showToast("Garden database loaded!", "info");
       }
     } catch (err) {
-      console.warn("Could not retrieve gallery telemetry from Supabase:", err);
+      console.warn("Could not retrieve garden database:", err);
     }
   }
 });

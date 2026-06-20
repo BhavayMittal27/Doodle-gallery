@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Gallery</title>
+  <title>Anna's Secret Garden</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,232 +12,138 @@
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
-<body class="theme-space">
-
-  <!-- Sticky Top Navigation Bar -->
-  <nav class="app-nav space-border">
-    <div class="nav-logo hand-drawn"><a href="#space">Doodle Gallery</a></div>
-    <div class="nav-links-wrap">
-      <a href="#space" class="nav-link-btn active hand-drawn">Draw</a>
-      <a href="#gallery-archive" class="nav-link-btn hand-drawn">Gallery</a>
-      <a href="#about" class="nav-link-btn hand-drawn">About</a>
-    </div>
-  </nav>
-
-  <!-- Onboarding Banner -->
-  <div id="onboarding-banner" class="onboarding-banner space-border">
-    <div class="onboarding-content text-center">
-      <h2 class="hand-drawn">Welcome to Doodle Gallery! 🎨</h2>
-      <p>Draw your doodle → place it as a star → it appears in the gallery sky.</p>
-      <button id="close-onboarding-btn" class="space-btn primary-btn hand-drawn">Start Drawing</button>
-    </div>
-  </div>
-
-  <!-- SVG Filters for Celestial Glow Effects -->
-  <svg style="position: absolute; width: 0; height: 0; pointer-events: none;" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <!-- Subtle glow filter -->
-      <filter id="cosmic-glow" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="4" result="blur" />
-        <feMerge>
-          <feMergeNode in="blur" />
-          <feMergeNode in="SourceGraphic" />
-        </feMerge>
-      </filter>
-      <!-- Heavy glow filter for nebulas -->
-      <filter id="nebula-glow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="12" result="blur" />
-        <feMerge>
-          <feMergeNode in="blur" />
-          <feMergeNode in="SourceGraphic" />
-        </feMerge>
-      </filter>
-      <!-- Star twinkle distortion wobble -->
-      <filter id="space-wobble">
-        <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    </defs>
-  </svg>
-
-  <!-- Starry Background Canvas Overlay -->
-  <div class="space-background">
-    <div id="stars-layer-1"></div>
-    <div id="stars-layer-2"></div>
-    <div class="space-nebula"></div>
-  </div>
+<body class="theme-garden">
 
   <!-- Main Scroll Container -->
-  <main class="content-container">
-
-    <!-- Unified Celestial Space Section -->
-    <section id="space" class="garden-section page-section">
-      <div class="section-header text-center">
-        <h1 class="section-title hand-drawn">Doodle Gallery</h1>
-        <p class="section-subtitle">Draw your doodle, place it in the sky, and view the public gallery.</p>
-      </div>
-
-      <div class="garden-dashboard">
-        <!-- Floating Cosmic Island Column -->
-        <div class="island-card space-border-heavy">
-          <!-- Toolbar -->
-          <div class="island-toolbar">
-            <div class="filter-categories" id="filter-categories">
-              <button class="filter-btn active hand-drawn" data-filter="all">All</button>
-              <button class="filter-btn hand-drawn" data-filter="portfolio">Portfolio</button>
-              <button class="filter-btn hand-drawn" data-filter="user">Guest Doodles</button>
-            </div>
-            <div class="search-box">
-              <input type="text" id="gallery-search" class="space-input hand-drawn" placeholder="🔍 Search stars...">
-            </div>
-          </div>
-          
-          <div class="sky-instructions hand-drawn">🌌 Hover or click doodles around the sun to inspect them</div>
-
-          <!-- Island Viewport -->
-          <div class="island-viewport">
-            <!-- Bobbing Island Container -->
-            <div class="island-wrapper" id="island-wrapper">
-              <!-- Floating Doodled Sun -->
-              <svg class="doodled-sun" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <!-- Simpler Outer Rays -->
-                <path d="M 50 20 L 50 5" stroke="#ffd740" stroke-width="3" stroke-linecap="round" />
-                <path d="M 50 80 L 50 95" stroke="#ffd740" stroke-width="3" stroke-linecap="round" />
-                <path d="M 20 50 L 5 50" stroke="#ffd740" stroke-width="3" stroke-linecap="round" />
-                <path d="M 80 50 L 95 50" stroke="#ffd740" stroke-width="3" stroke-linecap="round" />
-                
-                <path d="M 29 29 L 18 18" stroke="#ffd740" stroke-width="3" stroke-linecap="round" />
-                <path d="M 71 71 L 82 82" stroke="#ffd740" stroke-width="3" stroke-linecap="round" />
-                <path d="M 29 71 L 18 82" stroke="#ffd740" stroke-width="3" stroke-linecap="round" />
-                <path d="M 71 29 L 82 18" stroke="#ffd740" stroke-width="3" stroke-linecap="round" />
-
-                <!-- Inner wobbly solid sun core -->
-                <circle cx="50" cy="50" r="18" fill="#ffd740" stroke="#2b2b2b" stroke-width="3.5" filter="url(#space-wobble)" />
-              </svg>
-              <!-- Scattered Constellation Nodes Layer -->
-              <div class="constellations-layer" id="constellations-layer"></div>
-            </div>
-          </div>
-
-          <!-- Mobile trigger to open canvas panel modal -->
-          <button id="mobile-draw-btn" class="space-btn primary-btn hand-drawn mobile-only-btn">
-            ✨ Draw a Doodle
-          </button>
+  <div class="garden-wrapper-root">
+    <h1 class="garden-title hand-drawn">Anna's Secret Garden</h1>
+    
+    <div class="garden-main-layout">
+      <!-- Left/Center: Bobbing Grassy Island -->
+      <div class="island-container">
+        <div class="island-bobbing-wrapper" id="island-wrapper">
+          <img src="island.png" alt="Garden island" class="garden-island-img">
+          <!-- Scattered Flowers Layer -->
+          <div class="flowers-layer" id="constellations-layer"></div>
         </div>
-
-        <!-- Star Forge Drawing Canvas Column -->
-        <div class="controls-panel" id="forge-panel">
-          <!-- Close drawer button for mobile screen mode -->
-          <button class="close-drawer-btn" id="close-drawer-btn" aria-label="Close drawing panel">&times;</button>
+      </div>
+      
+      <!-- Right: Drawing Studio (Desktop: visible; Mobile: drawer overlay) -->
+      <div class="studio-panel-column" id="forge-panel">
+        <!-- Close drawer button for mobile screen mode -->
+        <button class="close-drawer-btn" id="close-drawer-btn" aria-label="Close drawing panel">&times;</button>
+        
+        <div class="studio-canvas-layout">
+          <!-- Absolute Left: Color Palette Column -->
+          <div class="color-palette-wrap">
+            <div class="color-palette" id="color-palette">
+              <!-- Rebuilt dynamically in JS with the 5 exact colors -->
+            </div>
+          </div>
           
-          <h3 class="panel-title hand-drawn">Draw a Doodle</h3>
-          
-          <div class="studio-workspace">
-            <!-- Left Side: Color Picker Vertical Column -->
-            <div class="color-picker-column">
-              <div class="color-palette" id="color-palette">
-                <!-- Rebuilt dynamically in JS -->
-              </div>
+          <!-- Center: Canvas Area -->
+          <div class="canvas-box-wrap">
+            <div class="canvas-container">
+              <canvas id="paint-canvas" tabindex="0" role="application" aria-label="Drawing canvas - use mouse, touch, or arrow keys to draw"></canvas>
+              <!-- Absolute top-right reset/clear button -->
+              <button id="clear-btn" class="canvas-clear-icon-btn" title="Clear drawing" aria-label="Clear canvas">↺</button>
             </div>
             
-            <!-- Right Side: Canvas Studio Drawing Box -->
-            <div class="canvas-action-area">
-              <div class="canvas-container">
-                <canvas id="paint-canvas" tabindex="0" role="application" aria-label="Drawing canvas - use mouse, touch, or arrow keys to draw"></canvas>
-                <div class="canvas-floating-controls">
-                  <button id="undo-btn" class="canvas-control-btn" title="Undo last stroke" aria-label="Undo last stroke" disabled>↶</button>
-                  <button id="clear-btn" class="canvas-control-btn" title="Clear canvas" aria-label="Clear canvas">🗑️</button>
-                </div>
-              </div>
-              
-              <div class="save-actions">
-                <input type="text" id="doodle-title" class="space-input hand-drawn" placeholder="Title your doodle..." maxlength="25" required>
-                <input type="text" id="doodle-author" class="space-input hand-drawn" placeholder="Your name (optional)..." maxlength="20">
-                <textarea id="doodle-desc" class="space-input hand-drawn" placeholder="Describe your doodle..." maxlength="150" required></textarea>
-                <button id="save-gallery-btn" class="space-btn primary-btn hand-drawn" disabled>
-                  Place
-                </button>
-              </div>
+            <div class="planting-form">
+              <!-- Input fields required for title/author/description and validation -->
+              <input type="text" id="doodle-title" class="garden-input hand-drawn" placeholder="Title your flower..." maxlength="25" required>
+              <input type="text" id="doodle-author" class="garden-input hand-drawn" placeholder="Your name (optional)..." maxlength="20">
+              <textarea id="doodle-desc" class="garden-input hand-drawn" placeholder="Describe your flower..." maxlength="150" required></textarea>
+              <button id="save-gallery-btn" class="garden-btn primary-btn hand-drawn" disabled>
+                🌱 Plant
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Star Gallery Archive Section -->
-    <section id="gallery-archive" class="archive-section page-section">
-      <div class="gallery-container">
-        <!-- Top header row like annadev -->
-        <div class="gallery-header-row">
-          <h2 class="gallery-header-title hand-drawn">Gallery</h2>
-          <button class="close-gallery-btn hand-drawn" id="close-gallery-btn">
-            ← Gallery
-          </button>
+    <!-- Mobile-only draw trigger button -->
+    <button id="mobile-draw-btn" class="garden-mobile-draw-btn hand-drawn">
+      🌸 Draw a flower
+    </button>
+    
+    <!-- Fixed gallery floating link -->
+    <a href="#gallery-archive" class="floating-gallery-link hand-drawn" id="mobile-gallery-btn" title="See flower gallery">
+      🖼️ See flower gallery
+    </a>
+  </div>
+
+  <!-- Fullscreen Flower Gallery Overlay -->
+  <section id="gallery-archive" class="archive-section">
+    <div class="gallery-container">
+      <div class="gallery-header-row">
+        <h2 class="gallery-header-title hand-drawn">Flower Gallery</h2>
+        <button class="close-gallery-btn hand-drawn" id="close-gallery-btn">
+          ← Back to Garden
+        </button>
+      </div>
+      
+      <p class="gallery-header-subtitle">
+        Browse through all the flowers planted in our community garden.
+      </p>
+
+      <div class="gallery-toolbar">
+        <div class="search-box">
+          <input type="text" id="archive-search" class="garden-input hand-drawn" placeholder="🔍 Search flowers or gardeners...">
         </div>
-        
-        <p class="gallery-header-subtitle">
-          Browse through all the doodles saved in the database.
-        </p>
-
-        <div class="gallery-toolbar space-border">
-          <div class="search-box">
-            <input type="text" id="archive-search" class="space-input hand-drawn" placeholder="🔍 Search by title or author...">
-          </div>
-          <div class="sort-box">
-            <select id="archive-sort" class="space-select hand-drawn">
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="liked">Most Liked</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="gallery-empty-state" class="empty-state space-border hidden">
-          <div class="empty-state-icon">🎨</div>
-          <h4 class="hand-drawn">No doodles found</h4>
-          <p>Be the first to add a doodle to this gallery!</p>
-          <button id="empty-state-draw-btn" class="space-btn primary-btn hand-drawn">Start Drawing</button>
-        </div>
-
-        <div class="archive-grid" id="archive-grid">
-          <!-- Populate dynamically in app.js -->
+        <div class="sort-box">
+          <select id="archive-sort" class="garden-select hand-drawn">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="liked">Most Liked</option>
+          </select>
         </div>
       </div>
-    </section>
 
-  </main>
+      <div id="gallery-empty-state" class="empty-state hidden">
+        <div class="empty-state-icon">🌸</div>
+        <h4 class="hand-drawn">No flowers found</h4>
+        <p>Be the first to plant a flower in this garden!</p>
+        <button id="empty-state-draw-btn" class="garden-btn primary-btn hand-drawn">Start Drawing</button>
+      </div>
 
-  <!-- Lightbox Modal for Constellation Inspect -->
+      <div class="archive-grid" id="archive-grid">
+        <!-- Populate dynamically in app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox Modal for Flower Inspect -->
   <div class="lightbox-modal" id="doodle-lightbox">
     <div class="lightbox-overlay" id="lightbox-close-overlay"></div>
-    <div class="lightbox-container space-border">
+    <div class="lightbox-container">
       <button class="close-lightbox" id="close-lightbox-btn" aria-label="Close modal">&times;</button>
       <div class="lightbox-grid">
-        <div class="lightbox-image-wrapper space-border">
+        <div class="lightbox-image-wrapper">
           <div id="lightbox-media-container">
             <!-- SVG / PNG loaded here -->
           </div>
         </div>
         <div class="lightbox-details">
           <div class="lightbox-header">
-            <span class="lightbox-tag hand-drawn" id="lightbox-tag">Doodle</span>
+            <span class="lightbox-tag hand-drawn" id="lightbox-tag">Flower</span>
             <h3 class="lightbox-title hand-drawn" id="lightbox-title">Constellation</h3>
             <div class="lightbox-meta">
               <span id="lightbox-author">By Anonymous</span> &bull; <span id="lightbox-date">June 21, 2026</span>
             </div>
           </div>
           <div class="lightbox-body">
-            <p id="lightbox-description">Astronomical findings.</p>
-            
-            <div class="tech-tags-list" id="lightbox-tech-tags">
-              <!-- Tag lists -->
+            <p id="lightbox-description">Botanical findings.</p>
+            <div class="tech-tags-list" id="lightbox-tech-tags" style="display: none;">
+              <!-- Hidden or simplified tags -->
             </div>
           </div>
           <div class="lightbox-footer">
-            <a id="lightbox-download" href="#" download="doodle_log.json" class="space-btn primary-btn hand-drawn flex-btn">
-              <span>↓</span> Download JSON Log
+            <a id="lightbox-download" href="#" download="flower_log.json" class="garden-btn primary-btn hand-drawn flex-btn">
+              <span>↓</span> Download Log
             </a>
-            <button id="lightbox-like" class="space-btn secondary-btn hand-drawn flex-btn">
+            <button id="lightbox-like" class="garden-btn secondary-btn hand-drawn flex-btn">
               <span>♥</span> Like (<span id="like-count">0</span>)
             </button>
           </div>
@@ -249,36 +155,18 @@
   <!-- Notification Toast -->
   <div class="toast-container" id="toast-container"></div>
 
-  <!-- Floating Gallery Link -->
-  <a href="#gallery-archive" class="floating-gallery-btn hand-drawn" title="See Gallery">
-    🖼️ See Gallery
-  </a>
-
-  <!-- About Section -->
-  <section id="about" class="about-section page-section">
-    <div class="about-card space-border">
-      <h3 class="hand-drawn">About Doodle Gallery</h3>
-      <p>Doodle Gallery is an interactive shared drawing board where your sketches transform into floating stars in a shared sky. Open the Draw tool to sketch your ideas, place them into the viewport, or browse what others have drawn in the public Gallery archive.</p>
-    </div>
-  </section>
-
   <!-- Unsaved Changes Modal -->
   <div id="unsaved-modal" class="lightbox-modal">
     <div class="lightbox-overlay" id="unsaved-close-overlay"></div>
-    <div class="lightbox-container space-border alert-container">
+    <div class="lightbox-container alert-container">
       <h3 class="hand-drawn">Unsaved Work</h3>
-      <p>You have unsaved changes on the canvas. Discard and close?</p>
+      <p>You have unsaved changes. Discard and close?</p>
       <div class="modal-buttons">
-        <button id="confirm-discard-btn" class="space-btn danger-btn hand-drawn">Discard</button>
-        <button id="cancel-discard-btn" class="space-btn secondary-btn hand-drawn">Keep Editing</button>
+        <button id="confirm-discard-btn" class="garden-btn danger-btn hand-drawn">Discard</button>
+        <button id="cancel-discard-btn" class="garden-btn secondary-btn hand-drawn">Keep Drawing</button>
       </div>
     </div>
   </div>
-
-  <!-- Footer -->
-  <footer class="app-footer text-center">
-    <p class="hand-drawn">Made with 🌌, 🌟, and HTML5 Canvas &bull; &copy; 2026 Doodle Gallery</p>
-  </footer>
 
   <!-- Scripts -->
   <script type="module" src="assets.js"></script>
