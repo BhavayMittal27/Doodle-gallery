@@ -299,6 +299,10 @@ document.addEventListener('DOMContentLoaded', () => {
     layer.innerHTML = '';
 
     // 1. Render transparent flowers directly on the bobbing island image (No hover tooltips or click actions)
+    if (!window.loadedFlowers) {
+      window.loadedFlowers = new Set();
+    }
+
     flowersList.forEach(flower => {
       const coords = getCoordinatesForId(flower.id);
       
@@ -312,17 +316,40 @@ document.addEventListener('DOMContentLoaded', () => {
       node.style.setProperty('--float-duration', `${4 + (Math.abs(coords.x + coords.y) % 5)}s`);
       node.style.setProperty('--float-delay', `${-(Math.abs(coords.x * coords.y) % 8)}s`);
 
-      let mediaContent = '';
+      const hasLoaded = window.loadedFlowers.has(flower.id);
+      const drawingDiv = document.createElement('div');
+      drawingDiv.className = `constellation-drawing ${hasLoaded ? 'animate-growIn' : 'opacity-0-scale-0'}`;
+
       if (flower.imageSrc) {
-        mediaContent = `<img src="${flower.imageSrc}" alt="Flower" loading="lazy">`;
+        const img = document.createElement('img');
+        img.src = flower.imageSrc;
+        img.alt = "Flower";
+        img.loading = "lazy";
+        
+        img.addEventListener('load', () => {
+          if (!window.loadedFlowers.has(flower.id)) {
+            window.loadedFlowers.add(flower.id);
+          }
+          drawingDiv.classList.remove('opacity-0-scale-0');
+          drawingDiv.classList.add('animate-growIn');
+        });
+
+        // Fallback for cached images
+        if (img.complete) {
+          if (!window.loadedFlowers.has(flower.id)) {
+            window.loadedFlowers.add(flower.id);
+          }
+          drawingDiv.classList.remove('opacity-0-scale-0');
+          drawingDiv.classList.add('animate-growIn');
+        }
+
+        drawingDiv.appendChild(img);
+      } else {
+        drawingDiv.classList.remove('opacity-0-scale-0');
+        drawingDiv.classList.add('animate-growIn');
       }
 
-      node.innerHTML = `
-        <div class="constellation-drawing">
-          ${mediaContent}
-        </div>
-      `;
-
+      node.appendChild(drawingDiv);
       layer.appendChild(node);
     });
 

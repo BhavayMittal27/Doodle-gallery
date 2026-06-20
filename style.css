@@ -65,6 +65,7 @@ a {
   color: var(--text-green);
   text-align: center;
   margin-bottom: 2.5rem;
+  animation: fadeInSlideUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
 .garden-main-layout {
@@ -84,6 +85,7 @@ a {
   align-items: center;
   justify-content: center;
   flex: 1;
+  animation: islandEntry 1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .island-bobbing-wrapper {
@@ -617,6 +619,46 @@ a {
   gap: 1rem;
   justify-content: center;
   margin-top: 0.5rem;
+}
+
+/* --- ENTRY ANIMATIONS (Anna's Garden Style Page Load) --- */
+@keyframes fadeInSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes islandEntry {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes panelEntry {
+  0% {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 769px) {
+  .studio-canvas-layout {
+    animation: panelEntry 0.8s cubic-bezier(0.25, 1, 0.5, 1) both 0.2s;
+  }
 }
 
 /* --- RESPONSIVE MEDIA QUERIES --- */
