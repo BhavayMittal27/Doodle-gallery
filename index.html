@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Walter+Turncoat&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- CSS Stylesheet -->
-  <script type="module" crossorigin src="./assets/index-Bz1UQ6Pd.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-B9aBd22g.css">
+  <script type="module" crossorigin src="./assets/index-D1sD8bJg.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DfSTPe7v.css">
 </head>
 <body class="theme-space">
 
@@ -76,7 +76,7 @@
     <section id="space" class="garden-section page-section">
       <div class="section-header text-center">
         <h1 class="section-title hand-drawn">The Constellation Garden</h1>
-        <p class="section-subtitle">Draw stars, comets, or planets and cast them directly onto our floating space island below.</p>
+        <p class="section-subtitle">Draw stars, comets, or planets and cast them directly around our floating sun below.</p>
       </div>
 
       <div class="garden-dashboard">
@@ -94,13 +94,50 @@
             </div>
           </div>
           
-          <div class="sky-instructions hand-drawn">🌌 Hover or click stars on the island to inspect them</div>
+          <div class="sky-instructions hand-drawn">🌌 Hover or click stars around the sun to inspect them</div>
 
           <!-- Island Viewport -->
           <div class="island-viewport">
             <!-- Bobbing Island Container -->
             <div class="island-wrapper" id="island-wrapper">
-              <img src="./assets/cosmic_island-D7JktIeM.png" alt="Cosmic Space Island" class="island-img">
+              <!-- Floating Doodled Sun -->
+              <svg class="doodled-sun island-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Soft warm glowing aura -->
+                <circle cx="50" cy="50" r="35" fill="rgba(255, 215, 64, 0.15)" filter="url(#cosmic-glow)" />
+                
+                <!-- Outer rays (wobbly hand-drawn lines) -->
+                <path d="M 50 12 L 50 2" stroke="#ffd740" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 50 88 L 50 98" stroke="#ffd740" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 12 50 L 2 50" stroke="#ffd740" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 88 50 L 98 50" stroke="#ffd740" stroke-width="3.5" stroke-linecap="round" />
+                
+                <path d="M 23 23 L 16 16" stroke="#ffd740" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 77 77 L 84 84" stroke="#ffd740" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 23 77 L 16 84" stroke="#ffd740" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 77 23 L 84 16" stroke="#ffd740" stroke-width="3.5" stroke-linecap="round" />
+                
+                <!-- Wobbly curved flame rays -->
+                <path d="M 36 18 Q 43 9 38 2" fill="none" stroke="#ff8c42" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M 64 18 Q 57 9 62 2" fill="none" stroke="#ff8c42" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M 82 36 Q 91 43 98 38" fill="none" stroke="#ff8c42" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M 82 64 Q 91 57 98 62" fill="none" stroke="#ff8c42" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M 64 82 Q 57 91 62 98" fill="none" stroke="#ff8c42" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M 36 82 Q 43 91 38 98" fill="none" stroke="#ff8c42" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M 18 64 Q 9 57 2 62" fill="none" stroke="#ff8c42" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M 18 36 Q 9 43 2 38" fill="none" stroke="#ff8c42" stroke-width="2.5" stroke-linecap="round" />
+
+                <!-- Inner wobbly solid sun core -->
+                <circle cx="50" cy="50" r="24" fill="#ffd740" stroke="#2b2b2b" stroke-width="3.5" filter="url(#space-wobble)" />
+                
+                <!-- Cute smiley face on the sun -->
+                <path d="M 43 45 A 2 2 0 1 1 43 44.9" stroke="#2b2b2b" stroke-width="4.5" stroke-linecap="round" />
+                <path d="M 57 45 A 2 2 0 1 1 57 44.9" stroke="#2b2b2b" stroke-width="4.5" stroke-linecap="round" />
+                <!-- Rosy cheeks -->
+                <circle cx="38" cy="52" r="3" fill="#ff4081" opacity="0.6" />
+                <circle cx="62" cy="52" r="3" fill="#ff4081" opacity="0.6" />
+                <!-- Smiley mouth -->
+                <path d="M 44 54 Q 50 60 56 54" fill="none" stroke="#2b2b2b" stroke-width="3.5" stroke-linecap="round" />
+              </svg>
               <!-- Scattered Constellation Nodes Layer -->
               <div class="constellations-layer" id="constellations-layer"></div>
             </div>
