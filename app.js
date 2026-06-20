@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (galleryOverlay) {
         galleryOverlay.classList.add('active');
         trapFocus(galleryOverlay);
+        document.body.style.overflow = 'hidden';
       }
       navLinks.forEach(link => {
         link.classList.remove('active');
@@ -79,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (galleryOverlay) {
         galleryOverlay.classList.remove('active');
         releaseFocus();
+        document.body.style.overflow = '';
       }
       navLinks.forEach(link => {
         link.classList.remove('active');
@@ -469,11 +471,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (saveBtn) saveBtn.disabled = true;
       if (unsavedModal) unsavedModal.classList.remove('active');
       releaseFocus();
+      document.body.style.overflow = '';
     }
     
     if (openBtn) {
       openBtn.addEventListener('click', () => {
         drawer.classList.add('active');
+        document.body.style.overflow = 'hidden';
       });
     }
     
