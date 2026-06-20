@@ -1,5 +1,5 @@
 -- ==========================================
--- Supabase Schema for StellaPort Doodle Gallery
+-- Supabase Schema for Doodle Gallery
 -- ==========================================
 
 -- 1. Create the 'drawings' table
@@ -8,8 +8,15 @@ CREATE TABLE IF NOT EXISTS public.drawings (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     path TEXT NOT NULL UNIQUE,
     caption TEXT,
-    flagged BOOLEAN DEFAULT FALSE
+    flagged BOOLEAN DEFAULT FALSE,
+    author TEXT DEFAULT 'Anonymous',
+    description TEXT
 );
+
+-- Upgrade existing installations:
+-- If the table already exists, run these commands to add columns:
+ALTER TABLE public.drawings ADD COLUMN IF NOT EXISTS author TEXT DEFAULT 'Anonymous';
+ALTER TABLE public.drawings ADD COLUMN IF NOT EXISTS description TEXT;
 
 -- Enable Row Level Security (RLS) on public.drawings
 ALTER TABLE public.drawings ENABLE ROW LEVEL SECURITY;

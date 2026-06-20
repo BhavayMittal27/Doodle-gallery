@@ -16,7 +16,7 @@ class SketchCanvas {
     // Default Drawing States
     this.currentTool = 'brush'; // brush, highlighter, eraser
     this.currentShape = 'free'; // free, line, rect, circle
-    this.currentColor = '#2b2b2b';
+    this.currentColor = '#ffffff'; // Default to Comet White
     this.brushSize = 6;
     this.brushOpacity = 1.0;
     
@@ -28,12 +28,19 @@ class SketchCanvas {
     // Offscreen Canvas for drawing shape previews
     this.previewSnapshot = null;
 
+    // Accessibility/UX states
+    this.hasDrawn = false;
+    this.kbdX = 120; // Default to center of 240px width canvas
+    this.kbdY = 120; // Default to center of 240px height canvas
+    this.isKbdDrawing = false;
+
     this.init();
   }
 
   init() {
     this.resizeCanvas();
     this.setupListeners();
+    this.updateKbdCursor();
     
     // Save initial blank state
     if (!this.isMini) {
@@ -94,6 +101,20 @@ class SketchCanvas {
       this.draw(touch);
     }, { passive: false });
     this.canvas.addEventListener('touchend', () => this.stopDrawing());
+
+    // Keyboard Draw Events
+    this.canvas.addEventListener('keydown', (e) => this.handleKeyDown(e));
+    this.canvas.addEventListener('keyup', (e) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        if (this.isKbdDrawing) {
+          this.isKbdDrawing = false;
+          this.ctx.closePath();
+          this.saveHistoryState();
+          this.hasDrawn = !this.checkIfBlank();
+          this.dispatchChangedEvent();
+        }
+      }
+    });
 
     // Window Resize (Debounced slightly)
     let resizeTimer;
@@ -189,6 +210,8 @@ class SketchCanvas {
     // Save state after drawing completes
     if (!this.isMini) {
       this.saveHistoryState();
+      this.hasDrawn = !this.checkIfBlank();
+      this.dispatchChangedEvent();
     }
   }
 
@@ -234,6 +257,8 @@ class SketchCanvas {
       this.ctx.clearRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr);
       this.ctx.drawImage(img, 0, 0, this.canvas.width / dpr, this.canvas.height / dpr);
       this.updateUndoRedoButtons();
+      this.hasDrawn = !this.checkIfBlank();
+      this.dispatchChangedEvent();
     };
   }
 
@@ -253,7 +278,79 @@ class SketchCanvas {
       this.history = [];
       this.historyIndex = -1;
       this.saveHistoryState();
+      this.hasDrawn = false;
+      this.dispatchChangedEvent();
     }
+  }
+
+  /* --- ACCESSIBILITY AND CHANGE EVENT HELPERS --- */
+  checkIfBlank() {
+    try {
+      const imgData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+      const data = imgData.data;
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i] > 10) {
+          return false;
+        }
+      }
+    } catch (e) {
+      console.warn("Could not check image data:", e);
+    }
+    return true;
+  }
+
+  dispatchChangedEvent() {
+    this.canvas.dispatchEvent(new CustomEvent('canvas-changed', { 
+      detail: { hasDrawn: this.hasDrawn } 
+    }));
+  }
+
+  updateKbdCursor() {
+    const parent = this.canvas.parentElement;
+    if (parent) {
+      const dpr = window.devicePixelRatio || 1;
+      const cssW = this.canvas.width / dpr;
+      const cssH = this.canvas.height / dpr;
+      const pctX = (this.kbdX / cssW) * 100;
+      const pctY = (this.kbdY / cssH) * 100;
+      parent.style.setProperty('--kbd-x', `${pctX}%`);
+      parent.style.setProperty('--kbd-y', `${pctY}%`);
+    }
+  }
+
+  handleKeyDown(e) {
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    e.preventDefault(); // Stop page scrolling when drawing
+    
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = this.canvas.width / dpr;
+    const cssH = this.canvas.height / dpr;
+    
+    const step = 8;
+    const prevX = this.kbdX;
+    const prevY = this.kbdY;
+
+    if (e.key === 'ArrowUp') this.kbdY = Math.max(0, this.kbdY - step);
+    if (e.key === 'ArrowDown') this.kbdY = Math.min(cssH, this.kbdY + step);
+    if (e.key === 'ArrowLeft') this.kbdX = Math.max(0, this.kbdX - step);
+    if (e.key === 'ArrowRight') this.kbdX = Math.min(cssW, this.kbdX + step);
+
+    this.updateKbdCursor();
+
+    // Configure context for drawing
+    this.ctx.lineWidth = this.brushSize;
+    this.ctx.strokeStyle = this.currentColor;
+    this.ctx.globalAlpha = this.brushOpacity;
+    this.ctx.globalCompositeOperation = 'source-over';
+
+    if (!this.isKbdDrawing) {
+      this.isKbdDrawing = true;
+      this.ctx.beginPath();
+      this.ctx.moveTo(prevX, prevY);
+    }
+    
+    this.ctx.lineTo(this.kbdX, this.kbdY);
+    this.ctx.stroke();
   }
 
   /* --- EXPORT/SAVE IMAGE --- */

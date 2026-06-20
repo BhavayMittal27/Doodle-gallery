@@ -33,14 +33,31 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCelestialSky();
     setupGalleryFilters();
     setupFloatingDoodlesInteraction();
+    setupOnboarding();
+    setupGalleryToolbar();
     
+    // Listen to canvas change to toggle Place button disabled state
+    const saveBtn = document.getElementById('save-gallery-btn');
+    const paintCanvas = document.getElementById('paint-canvas');
+    if (paintCanvas && saveBtn) {
+      paintCanvas.addEventListener('canvas-changed', (e) => {
+        saveBtn.disabled = !e.detail.hasDrawn;
+        
+        // Also enable/disable undo button
+        const undoBtn = document.getElementById('undo-btn');
+        if (undoBtn) {
+          undoBtn.disabled = mainCanvas.historyIndex <= 0;
+        }
+      });
+    }
+
     // Load drawings from Supabase in background
     fetchSupabaseDoodles();
   }
 
   // --- CELESTIAL NAV (OVERLAY TOGGLES, NO BODY SCROLL) ---
   function setupNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
+    const navLinks = document.querySelectorAll('.nav-link-btn');
     const galleryOverlay = document.getElementById('gallery-archive');
     const closeGalleryBtn = document.getElementById('close-gallery-btn');
     const floatingBtn = document.querySelector('.floating-gallery-btn');
@@ -48,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openGallery() {
       if (galleryOverlay) {
         galleryOverlay.classList.add('active');
+        trapFocus(galleryOverlay);
       }
       navLinks.forEach(link => {
         link.classList.remove('active');
@@ -60,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeGallery() {
       if (galleryOverlay) {
         galleryOverlay.classList.remove('active');
+        releaseFocus();
       }
       navLinks.forEach(link => {
         link.classList.remove('active');
@@ -76,8 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = link.getAttribute('href');
         if (target === '#gallery-archive') {
           openGallery();
+        } else if (target === '#about') {
+          closeGallery();
+          const aboutSection = document.getElementById('about');
+          if (aboutSection) aboutSection.scrollIntoView({ behavior: 'smooth' });
         } else {
           closeGallery();
+          const spaceSection = document.getElementById('space');
+          if (spaceSection) spaceSection.scrollIntoView({ behavior: 'smooth' });
         }
       });
     });
@@ -96,6 +121,51 @@ document.addEventListener('DOMContentLoaded', () => {
         closeGallery();
       });
     }
+
+    // Scroll Spy
+    const sections = document.querySelectorAll('section');
+    window.addEventListener('scroll', () => {
+      if (galleryOverlay && galleryOverlay.classList.contains('active')) return;
+      
+      let currentSectionId = 'space';
+      const scrollPos = window.scrollY + 160;
+      
+      sections.forEach(sec => {
+        if (sec.id === 'gallery-archive') return;
+        const secTop = sec.offsetTop;
+        const secHeight = sec.offsetHeight;
+        if (scrollPos >= secTop && scrollPos < secTop + secHeight) {
+          currentSectionId = sec.id;
+        }
+      });
+      
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${currentSectionId}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+  }
+
+  // Onboarding Setup
+  function setupOnboarding() {
+    const banner = document.getElementById('onboarding-banner');
+    const closeBtn = document.getElementById('close-onboarding-btn');
+    if (!banner || !closeBtn) return;
+
+    if (!localStorage.getItem('doodle_gallery_onboarded')) {
+      banner.classList.add('active');
+    }
+
+    closeBtn.addEventListener('click', () => {
+      banner.classList.remove('active');
+      localStorage.setItem('doodle_gallery_onboarded', 'true');
+      
+      // Open Draw drawer panel
+      const drawer = document.getElementById('forge-panel');
+      if (drawer) drawer.classList.add('active');
+    });
   }
 
   // --- PALETTE UI GENERATION ---
@@ -224,104 +294,109 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
         mainCanvas.clear();
-        showToast('Forge wiped clean!', 'info');
+        showToast('Canvas wiped clean!', 'info');
       });
     }
 
     const undoBtn = document.getElementById('undo-btn');
     if (undoBtn) {
-      undoBtn.addEventListener('click', () => mainCanvas.undo());
-    }
-
-    const redoBtn = document.getElementById('redo-btn');
-    if (redoBtn) {
-      redoBtn.addEventListener('click', () => mainCanvas.redo());
-    }
-
-    const downloadBtn = document.getElementById('download-btn');
-    if (downloadBtn) {
-      downloadBtn.addEventListener('click', () => {
-        const dataUrl = mainCanvas.getMergedDataURL(true);
-        const link = document.createElement('a');
-        link.download = `constellation_${Date.now()}.png`;
-        link.href = dataUrl;
-        link.click();
-        showToast('Constellation chart downloaded!', 'success');
+      undoBtn.addEventListener('click', () => {
+        mainCanvas.undo();
+        undoBtn.disabled = mainCanvas.historyIndex <= 0;
       });
     }
 
-    // Save/Post to Constellation Garden Island
+    // Save/Post to Doodle Garden Island
     document.getElementById('save-gallery-btn').addEventListener('click', async () => {
-    // Check if the drawing is valid space art
-    const check = classifyCosmicDrawing();
-    if (!check.isValid) {
-      showToast(check.reason, "danger");
-      return;
-    }
-
-    const titleInput = document.getElementById('doodle-title');
-    const title = titleInput.value.trim() || 'Unnamed Star';
-    
-    const saveBtn = document.getElementById('save-gallery-btn');
-    const originalText = saveBtn.innerHTML;
-    
-    // Get the image merged with space texture
-    const mergedImgData = mainCanvas.getMergedDataURL(true); // always dark celestial
-    let imageSrc = mergedImgData;
-
-    const newId = `user-doodle-${Date.now()}`;
-
-    if (supabase) {
-      try {
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = `<span>⏳</span> Beaming Star...`;
-        
-        const blob = dataURLtoBlob(mergedImgData);
-        const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        const filename = `${Date.now()}-${randomId}.png`;
-        const path = `public/${filename}`;
-        
-        const { error: uploadError } = await supabase.storage
-           .from('drawings')
-           .upload(path, blob, { contentType: 'image/png', upsert: false });
-           
-        if (uploadError) throw uploadError;
-        
-        const { error: insertError } = await supabase
-           .from('drawings')
-           .insert([{ path, caption: title, flagged: false }]);
-           
-        if (insertError) throw insertError;
-        
-        const { data: publicData } = supabase.storage
-           .from('drawings')
-           .getPublicUrl(path);
-           
-        imageSrc = publicData.publicUrl;
-        
-        showToast(`Successfully birthed "${title}" in the garden!`, 'success');
-      } catch (err) {
-        console.error("Supabase stargaze upload failed, saving locally:", err);
-        showToast("Failed to beam online. Saved in local session.", "danger");
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = originalText;
+      if (!mainCanvas.hasDrawn) {
+        showToast("Draw something first!", "danger");
+        return;
       }
-    } else {
-      showToast(`Successfully birthed "${title}" in local session!`, 'success');
-    }
+
+      // Check if the drawing is valid space art
+      const check = classifyCosmicDrawing();
+      if (!check.isValid) {
+        showToast(check.reason, "danger");
+        return;
+      }
+
+      const titleInput = document.getElementById('doodle-title');
+      const authorInput = document.getElementById('doodle-author');
+      const descInput = document.getElementById('doodle-desc');
+
+      const title = titleInput.value.trim();
+      const author = authorInput.value.trim() || 'Anonymous';
+      const description = descInput.value.trim();
+
+      if (!title) {
+        showToast("Please enter a title for your doodle!", "danger");
+        titleInput.focus();
+        return;
+      }
+      if (!description) {
+        showToast("Please enter a description for your doodle!", "danger");
+        descInput.focus();
+        return;
+      }
+      
+      const saveBtn = document.getElementById('save-gallery-btn');
+      const originalText = saveBtn.innerHTML;
+      
+      // Get the image merged with space texture
+      const mergedImgData = mainCanvas.getMergedDataURL(true); // always dark celestial
+      let imageSrc = mergedImgData;
+
+      const newId = `user-doodle-${Date.now()}`;
+
+      if (supabase) {
+        try {
+          saveBtn.disabled = true;
+          saveBtn.innerHTML = `<span>⏳</span> Beaming Star...`;
+          
+          const blob = dataURLtoBlob(mergedImgData);
+          const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+          const filename = `${Date.now()}-${randomId}.png`;
+          const path = `public/${filename}`;
+          
+          const { error: uploadError } = await supabase.storage
+             .from('drawings')
+             .upload(path, blob, { contentType: 'image/png', upsert: false });
+             
+          if (uploadError) throw uploadError;
+          
+          const { error: insertError } = await supabase
+             .from('drawings')
+             .insert([{ path, caption: title, flagged: false, author, description }]);
+             
+          if (insertError) throw insertError;
+          
+          const { data: publicData } = supabase.storage
+             .from('drawings')
+             .getPublicUrl(path);
+             
+          imageSrc = publicData.publicUrl;
+          
+          showToast(`Successfully birthed "${title}" in the garden!`, 'success');
+        } catch (err) {
+          console.error("Supabase stargaze upload failed, saving locally:", err);
+          showToast("Failed to beam online. Saved in local session.", "danger");
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
+        }
+      } else {
+        showToast(`Successfully birthed "${title}" in local session!`, 'success');
+      }
 
       const newDoodle = {
         id: newId,
         title: title,
         category: 'user',
-        tag: supabase ? 'Supabase Star' : 'Guest Star',
+        tag: supabase ? 'Supabase Doodle' : 'Guest Doodle',
         date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         likes: 0,
-        author: 'Guest Astronomer',
-        description: supabase 
-           ? 'A user-forged constellation stored persistently in our Supabase space catalog.' 
-           : 'A custom, interactive constellation saved locally in active session coordinates.',
+        author: author,
+        description: description,
         techTags: supabase 
            ? ['Supabase DB', 'Supabase Storage', 'Canvas API']
            : ['Canvas API', 'Telemetry Saved'],
@@ -334,7 +409,10 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Reset controls
       titleInput.value = '';
+      authorInput.value = '';
+      descInput.value = '';
       mainCanvas.clear();
+      saveBtn.disabled = true;
 
       // Close mobile drawer if active
       const drawer = document.getElementById('forge-panel');
@@ -357,8 +435,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawer = document.getElementById('forge-panel');
     const openBtn = document.getElementById('mobile-draw-btn');
     const closeBtn = document.getElementById('close-drawer-btn');
+    const unsavedModal = document.getElementById('unsaved-modal');
+    const confirmDiscardBtn = document.getElementById('confirm-discard-btn');
+    const cancelDiscardBtn = document.getElementById('cancel-discard-btn');
     
     if (!drawer) return;
+    
+    function tryCloseDrawer() {
+      if (mainCanvas.hasDrawn) {
+        if (unsavedModal) {
+          unsavedModal.classList.add('active');
+          trapFocus(unsavedModal);
+        } else {
+          if (confirm("You have unsaved work. Discard and close?")) {
+            closeDrawer();
+          }
+        }
+      } else {
+        closeDrawer();
+      }
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove('active');
+      mainCanvas.clear();
+      const saveBtn = document.getElementById('save-gallery-btn');
+      if (saveBtn) saveBtn.disabled = true;
+      if (unsavedModal) unsavedModal.classList.remove('active');
+      releaseFocus();
+    }
     
     if (openBtn) {
       openBtn.addEventListener('click', () => {
@@ -367,8 +472,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        drawer.classList.remove('active');
+      closeBtn.addEventListener('click', tryCloseDrawer);
+    }
+
+    if (confirmDiscardBtn) {
+      confirmDiscardBtn.addEventListener('click', () => {
+        closeDrawer();
+      });
+    }
+
+    if (cancelDiscardBtn) {
+      cancelDiscardBtn.addEventListener('click', () => {
+        if (unsavedModal) {
+          unsavedModal.classList.remove('active');
+          releaseFocus();
+        }
       });
     }
   }
@@ -417,16 +535,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const searchQuery = document.getElementById('gallery-search').value.toLowerCase().trim();
 
-    // Filter list
+    // 1. Render nodes overlaying the central floating island
     const filtered = doodlesList.filter(item => {
       const matchesCategory = (currentFilter === 'all' || item.category === currentFilter);
       const matchesSearch = item.title.toLowerCase().includes(searchQuery) ||
-                            item.description.toLowerCase().includes(searchQuery) ||
+                            (item.description && item.description.toLowerCase().includes(searchQuery)) ||
                             item.techTags.some(t => t.toLowerCase().includes(searchQuery));
       return matchesCategory && matchesSearch;
     });
 
-    // 1. Render nodes overlaying the central floating island
     filtered.forEach(doodle => {
       const coords = getCoordinatesForId(doodle.id);
       
@@ -436,7 +553,6 @@ document.addEventListener('DOMContentLoaded', () => {
       node.style.left = `${coords.x}%`;
       node.style.top = `${coords.y}%`;
 
-      // Set individual float animations variables deterministically based on coordinates
       node.style.setProperty('--float-duration', `${4 + (Math.abs(coords.x + coords.y) % 5)}s`);
       node.style.setProperty('--float-delay', `${-(Math.abs(coords.x * coords.y) % 8)}s`);
 
@@ -451,7 +567,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="star-glow-dot"></div>
         <div class="star-pulse-ring"></div>
         
-        <!-- Tooltip popover showing preview details -->
         <div class="star-tooltip space-border">
           <div class="tooltip-media">
             ${mediaContent}
@@ -461,7 +576,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
 
-      // Click to open inspection details modal
       node.addEventListener('click', (e) => {
         e.stopPropagation();
         openLightbox(doodle);
@@ -470,11 +584,48 @@ document.addEventListener('DOMContentLoaded', () => {
       layer.appendChild(node);
     });
 
-    // 2. Render cards in the star gallery archive grid below
+    // 2. Render cards in the gallery overlay grid
     const archiveGrid = document.getElementById('archive-grid');
     if (archiveGrid) {
       archiveGrid.innerHTML = '';
-      filtered.forEach(doodle => {
+      
+      const archiveSearchQuery = (document.getElementById('archive-search') 
+        ? document.getElementById('archive-search').value.toLowerCase().trim() 
+        : '');
+      
+      // Filter list for catalog grid specifically
+      let archiveFiltered = doodlesList.filter(item => {
+        const matchesCategory = (currentFilter === 'all' || item.category === currentFilter);
+        const matchesSearch = item.title.toLowerCase().includes(archiveSearchQuery) ||
+                              item.author.toLowerCase().includes(archiveSearchQuery) ||
+                              (item.description && item.description.toLowerCase().includes(archiveSearchQuery));
+        return matchesCategory && matchesSearch;
+      });
+
+      // Sort list for catalog grid specifically
+      const sortVal = (document.getElementById('archive-sort') 
+        ? document.getElementById('archive-sort').value 
+        : 'newest');
+        
+      if (sortVal === 'newest') {
+        archiveFiltered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      } else if (sortVal === 'oldest') {
+        archiveFiltered.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+      } else if (sortVal === 'liked') {
+        archiveFiltered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      }
+
+      // Handle empty state tab display
+      const emptyState = document.getElementById('gallery-empty-state');
+      if (emptyState) {
+        if (archiveFiltered.length === 0) {
+          emptyState.classList.remove('hidden');
+        } else {
+          emptyState.classList.add('hidden');
+        }
+      }
+
+      archiveFiltered.forEach(doodle => {
         const card = document.createElement('div');
         card.className = 'archive-card';
 
@@ -509,7 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
           e.stopPropagation();
           doodle.likes++;
           card.querySelector('.like-count-val').textContent = doodle.likes;
-          showToast(`Cosmic orbit count increased for "${doodle.title}"!`, 'success');
+          showToast(`Liked "${doodle.title}"!`, 'success');
           renderCelestialSky();
         });
 
@@ -539,9 +690,44 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    document.getElementById('gallery-search').addEventListener('input', () => {
-      renderCelestialSky();
-    });
+    const searchInput = document.getElementById('gallery-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        renderCelestialSky();
+      });
+    }
+  }
+
+  // Gallery Toolbar Setup
+  function setupGalleryToolbar() {
+    const archiveSearch = document.getElementById('archive-search');
+    const archiveSort = document.getElementById('archive-sort');
+    const emptyStateBtn = document.getElementById('empty-state-draw-btn');
+
+    if (archiveSearch) {
+      archiveSearch.addEventListener('input', () => {
+        renderCelestialSky();
+      });
+    }
+
+    if (archiveSort) {
+      archiveSort.addEventListener('change', () => {
+        renderCelestialSky();
+      });
+    }
+
+    if (emptyStateBtn) {
+      emptyStateBtn.addEventListener('click', () => {
+        const galleryOverlay = document.getElementById('gallery-archive');
+        if (galleryOverlay) {
+          galleryOverlay.classList.remove('active');
+          releaseFocus();
+        }
+        const drawer = document.getElementById('forge-panel');
+        if (drawer) drawer.classList.add('active');
+        document.getElementById('space').scrollIntoView({ behavior: 'smooth' });
+      });
+    }
   }
 
   // --- LIGHTBOX FLOWS ---
@@ -562,21 +748,30 @@ document.addEventListener('DOMContentLoaded', () => {
     mediaContainer.innerHTML = '';
     if (doodle.svg) {
       mediaContainer.innerHTML = doodle.svg;
-      const svgBlob = new Blob([doodle.svg], { type: 'image/svg+xml;charset=utf-8' });
-      downloadBtn.href = URL.createObjectURL(svgBlob);
-      downloadBtn.download = `${doodle.id}.svg`;
     } else if (doodle.imageSrc) {
       mediaContainer.innerHTML = `<img src="${doodle.imageSrc}" alt="${doodle.title}">`;
-      downloadBtn.href = doodle.imageSrc;
-      downloadBtn.download = `${doodle.title.replace(/\s+/g, '_')}.png`;
     }
+
+    // Set Download Log Link to download log JSON file
+    const logData = {
+      title: doodle.title,
+      author: doodle.author,
+      date: doodle.date,
+      likes: doodle.likes,
+      description: doodle.description || 'A user-forged doodle.',
+      techTags: doodle.techTags,
+      imageSrc: doodle.imageSrc
+    };
+    const jsonBlob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+    downloadBtn.href = URL.createObjectURL(jsonBlob);
+    downloadBtn.download = `${doodle.title.replace(/\s+/g, '_')}_log.json`;
 
     // Details text
     tagSpan.textContent = doodle.tag;
     titleHeader.textContent = doodle.title;
     authorSpan.textContent = doodle.author;
     dateSpan.textContent = doodle.date;
-    descP.textContent = doodle.description;
+    descP.textContent = doodle.description || 'No description provided.';
     likeCountSpan.textContent = doodle.likes;
 
     // Tech tags
@@ -594,7 +789,7 @@ document.addEventListener('DOMContentLoaded', () => {
     newLikeBtn.addEventListener('click', () => {
       doodle.likes++;
       likeCountSpan.textContent = doodle.likes;
-      showToast(`Cosmic orbit count increased for "${doodle.title}"!`, 'success');
+      showToast(`Liked "${doodle.title}"!`, 'success');
       
       // Update star node details
       renderCelestialSky();
@@ -602,13 +797,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Show modal
     lightbox.classList.add('active');
+    trapFocus(lightbox);
 
     const closeBtn = document.getElementById('close-lightbox-btn');
     const overlay = document.getElementById('lightbox-close-overlay');
-    const closeModal = () => lightbox.classList.remove('active');
+    const closeModal = () => {
+      lightbox.classList.remove('active');
+      releaseFocus();
+    };
     
     closeBtn.onclick = closeModal;
     overlay.onclick = closeModal;
+  }
+
+  // --- FOCUS TRAPPING & ACCESSIBILITY HELPER ---
+  let activeFocusTrap = null;
+  let previousActiveElement = null;
+
+  function trapFocus(modal) {
+    if (!modal) return;
+    previousActiveElement = document.activeElement;
+    activeFocusTrap = modal;
+
+    // Disable main background elements for screen-readers
+    const container = document.querySelector('.content-container');
+    const nav = document.querySelector('.app-nav');
+    const footer = document.querySelector('.app-footer');
+    if (container) container.setAttribute('inert', '');
+    if (nav) nav.setAttribute('inert', '');
+    if (footer) footer.setAttribute('inert', '');
+    modal.removeAttribute('inert');
+
+    const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusableElements.length === 0) return;
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    firstElement.focus();
+
+    modal._focusTrapListener = function(e) {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    modal.addEventListener('keydown', modal._focusTrapListener);
+  }
+
+  function releaseFocus() {
+    if (!activeFocusTrap) return;
+
+    // Enable main background elements
+    const container = document.querySelector('.content-container');
+    const nav = document.querySelector('.app-nav');
+    const footer = document.querySelector('.app-footer');
+    if (container) container.removeAttribute('inert');
+    if (nav) nav.removeAttribute('inert');
+    if (footer) footer.removeAttribute('inert');
+
+    activeFocusTrap.removeEventListener('keydown', activeFocusTrap._focusTrapListener);
+    delete activeFocusTrap._focusTrapListener;
+    
+    const prevTrap = activeFocusTrap;
+    activeFocusTrap = null;
+
+    if (previousActiveElement) {
+      previousActiveElement.focus();
+    }
   }
 
 
@@ -668,12 +934,17 @@ document.addEventListener('DOMContentLoaded', () => {
   async function fetchSupabaseDoodles() {
     if (!supabase) return;
     try {
-      const { data, error } = await supabase
-        .from('drawings')
-        .select('path, caption, flagged, created_at')
-        .order('created_at', { ascending: false })
-        .limit(40);
-        
+      let query = supabase.from('drawings').select('path, caption, flagged, created_at, author, description');
+      let { data, error } = await query.order('created_at', { ascending: false }).limit(40);
+      
+      if (error && (error.message.includes('column') || error.code === 'PGRST204')) {
+        console.warn("Table does not have new author/description columns yet. Querying standard fields...");
+        const fallbackQuery = supabase.from('drawings').select('path, caption, flagged, created_at');
+        const fallbackRes = await fallbackQuery.order('created_at', { ascending: false }).limit(40);
+        data = fallbackRes.data;
+        error = fallbackRes.error;
+      }
+
       if (error) throw error;
       
       if (data && data.length > 0) {
@@ -681,15 +952,15 @@ document.addEventListener('DOMContentLoaded', () => {
           const { data: publicData } = supabase.storage.from('drawings').getPublicUrl(row.path);
           return {
             id: `db-doodle-${row.path.replace(/\//g, '_')}-${index}`,
-            title: row.caption || 'Unnamed Star',
+            title: row.caption || 'Unnamed Doodle',
             category: 'user',
-            tag: 'Supabase Star',
+            tag: 'Supabase Doodle',
             date: row.created_at
               ? new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(new Date(row.created_at))
               : "Recent Discovery",
             likes: Math.floor(Math.random() * 20) + 5,
-            author: 'Guest Astronomer',
-            description: 'A user-forged constellation stored persistently in our Supabase space catalog.',
+            author: row.author || 'Anonymous',
+            description: row.description || 'A user-forged doodle stored persistently in our Supabase gallery.',
             techTags: ['Supabase DB', 'Supabase Storage', 'Canvas API'],
             imageSrc: publicData.publicUrl
           };
@@ -697,10 +968,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         doodlesList = [...dbDoodles];
         renderCelestialSky();
-        showToast("Astronomical database loaded!", "info");
+        showToast("Doodle gallery database loaded!", "info");
       }
     } catch (err) {
-      console.warn("Could not retrieve space telemetry from Supabase:", err);
+      console.warn("Could not retrieve gallery telemetry from Supabase:", err);
     }
   }
 });
