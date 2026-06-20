@@ -217,7 +217,7 @@ a {
   border-radius: 8px;
   position: relative;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: transparent;
 }
 
 #paint-canvas {
@@ -458,46 +458,59 @@ a {
   display: none;
 }
 
-/* --- GALLERY CARD GRID --- */
+/* --- GALLERY GRID (Anna's Garden Minimalist Style) --- */
 .archive-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 2rem;
-}
-
-.archive-card {
-  background-color: #ffffff;
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  box-shadow: 3px 3px 0px var(--border-color);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
 }
 
-.archive-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 5px 5px 0px var(--border-color);
-}
-
-.archive-media {
-  width: 100%;
+.archive-item {
+  position: relative;
   aspect-ratio: 1 / 1;
-  background-color: #fffffb;
-  border: 2px dashed rgba(0,0,0,0.1);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
   overflow: hidden;
+  cursor: pointer;
+  transform-origin: center bottom;
+  transition: transform var(--transition-fast);
 }
 
-.archive-media img {
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
+.archive-item:hover {
+  transform: scale(1.15);
+}
+
+.archive-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.archive-item:hover img {
+  transform: scale(1.1);
+}
+
+.opacity-0-scale-0 {
+  opacity: 0;
+  transform: scale(0);
+}
+
+@keyframes growIn {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-growIn {
+  animation: growIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* --- TOAST NOTIFICATIONS --- */

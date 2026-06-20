@@ -341,22 +341,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      flowersList.forEach(flower => {
-        const card = document.createElement('div');
-        card.className = 'archive-card';
+      // Maintain loaded flowers set on window to persist animation status across re-renders
+      if (!window.loadedFlowers) {
+        window.loadedFlowers = new Set();
+      }
 
-        let mediaContent = '';
+      flowersList.forEach(flower => {
+        const item = document.createElement('div');
+        const hasLoaded = window.loadedFlowers.has(flower.id);
+        
+        item.className = `archive-item ${hasLoaded ? 'animate-growIn' : 'opacity-0-scale-0'}`;
+        item.style.transformOrigin = 'center bottom';
+
         if (flower.imageSrc) {
-          mediaContent = `<img src="${flower.imageSrc}" alt="Flower" loading="lazy">`;
+          const img = document.createElement('img');
+          img.src = flower.imageSrc;
+          img.alt = flower.title || 'Flower';
+          img.loading = 'lazy';
+          
+          img.addEventListener('load', () => {
+            if (!window.loadedFlowers.has(flower.id)) {
+              window.loadedFlowers.add(flower.id);
+              item.classList.remove('opacity-0-scale-0');
+              item.classList.add('animate-growIn');
+            }
+          });
+          
+          // Fallback if loaded from cache before event listener attached
+          if (img.complete) {
+            if (!window.loadedFlowers.has(flower.id)) {
+              window.loadedFlowers.add(flower.id);
+              item.classList.remove('opacity-0-scale-0');
+              item.classList.add('animate-growIn');
+            }
+          }
+          
+          item.appendChild(img);
+        } else {
+          item.classList.remove('opacity-0-scale-0');
+          item.classList.add('animate-growIn');
         }
 
-        card.innerHTML = `
-          <div class="archive-media">
-            ${mediaContent}
-          </div>
-        `;
-
-        archiveGrid.appendChild(card);
+        archiveGrid.appendChild(item);
       });
     }
   }
