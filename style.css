@@ -10,7 +10,7 @@
   --bg-main: #fffff3; /* Warm parchment cream */
   --bg-card: #ffffff;
   --text-main: #2b2b2b;
-  --text-green: #1b4332; /* Forest green */
+  --text-green: #016630; /* Forest green */
   --text-muted: #5f6368;
   --border-color: #2b2b2b;
 
@@ -30,7 +30,7 @@
 }
 
 body {
-  font-family: var(--font-ui);
+  font-family: var(--font-hand), var(--font-ui);
   color: var(--text-main);
   background-color: var(--bg-main);
   line-height: 1.6;
@@ -183,6 +183,14 @@ a {
   flex-direction: column;
   align-items: center;
   padding-top: 10px;
+}
+
+@media (min-width: 769px) {
+  .color-palette-wrap {
+    position: absolute;
+    left: -48px;
+    top: 36px;
+  }
 }
 
 .color-palette {
@@ -370,9 +378,6 @@ a {
 
 /* --- FIXED FLOATING GALLERY LINK --- */
 .floating-gallery-link {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -385,6 +390,16 @@ a {
   box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
   transition: transform var(--transition-fast);
   z-index: 80;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 769px) {
+  .floating-gallery-link {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    margin-bottom: 0;
+  }
 }
 
 .floating-gallery-link:hover {
@@ -730,12 +745,7 @@ a {
     display: block;
   }
 
-  .floating-gallery-link {
-    bottom: 80px;
-    right: 1.5rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
+  /* Statically stacked below on mobile, no positioning overrides needed */
 
   .gallery-header-row {
     flex-direction: column;
