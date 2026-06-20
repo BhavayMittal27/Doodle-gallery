@@ -50,10 +50,6 @@
             </div>
             
             <div class="planting-form">
-              <!-- Input fields required for title/author/description and validation -->
-              <input type="text" id="doodle-title" class="garden-input hand-drawn" placeholder="Title your flower..." maxlength="25" required>
-              <input type="text" id="doodle-author" class="garden-input hand-drawn" placeholder="Your name (optional)..." maxlength="20">
-              <textarea id="doodle-desc" class="garden-input hand-drawn" placeholder="Describe your flower..." maxlength="150" required></textarea>
               <button id="save-gallery-btn" class="garden-btn primary-btn hand-drawn" disabled>
                 🌱 Plant
               </button>
@@ -84,23 +80,6 @@
         </button>
       </div>
       
-      <p class="gallery-header-subtitle">
-        Browse through all the flowers planted in our community garden.
-      </p>
-
-      <div class="gallery-toolbar">
-        <div class="search-box">
-          <input type="text" id="archive-search" class="garden-input hand-drawn" placeholder="🔍 Search flowers or gardeners...">
-        </div>
-        <div class="sort-box">
-          <select id="archive-sort" class="garden-select hand-drawn">
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="liked">Most Liked</option>
-          </select>
-        </div>
-      </div>
-
       <div id="gallery-empty-state" class="empty-state hidden">
         <div class="empty-state-icon">🌸</div>
         <h4 class="hand-drawn">No flowers found</h4>
@@ -113,44 +92,6 @@
       </div>
     </div>
   </section>
-
-  <!-- Lightbox Modal for Flower Inspect -->
-  <div class="lightbox-modal" id="doodle-lightbox">
-    <div class="lightbox-overlay" id="lightbox-close-overlay"></div>
-    <div class="lightbox-container">
-      <button class="close-lightbox" id="close-lightbox-btn" aria-label="Close modal">&times;</button>
-      <div class="lightbox-grid">
-        <div class="lightbox-image-wrapper">
-          <div id="lightbox-media-container">
-            <!-- SVG / PNG loaded here -->
-          </div>
-        </div>
-        <div class="lightbox-details">
-          <div class="lightbox-header">
-            <span class="lightbox-tag hand-drawn" id="lightbox-tag">Flower</span>
-            <h3 class="lightbox-title hand-drawn" id="lightbox-title">Constellation</h3>
-            <div class="lightbox-meta">
-              <span id="lightbox-author">By Anonymous</span> &bull; <span id="lightbox-date">June 21, 2026</span>
-            </div>
-          </div>
-          <div class="lightbox-body">
-            <p id="lightbox-description">Botanical findings.</p>
-            <div class="tech-tags-list" id="lightbox-tech-tags" style="display: none;">
-              <!-- Hidden or simplified tags -->
-            </div>
-          </div>
-          <div class="lightbox-footer">
-            <a id="lightbox-download" href="#" download="flower_log.json" class="garden-btn primary-btn hand-drawn flex-btn">
-              <span>↓</span> Download Log
-            </a>
-            <button id="lightbox-like" class="garden-btn secondary-btn hand-drawn flex-btn">
-              <span>♥</span> Like (<span id="like-count">0</span>)
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Notification Toast -->
   <div class="toast-container" id="toast-container"></div>

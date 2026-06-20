@@ -7,7 +7,6 @@ import { supabase } from './supabase.js';
 document.addEventListener('DOMContentLoaded', () => {
   // --- STATE MANAGEMENT ---
   let flowersList = []; // Clean slate, only user drawings from Supabase
-  let currentFilter = 'all';
   
   // Canvas Instantiation
   const mainCanvas = new SketchCanvas('paint-canvas');
@@ -30,8 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCanvasControls();
     setupMobileDrawer();
     renderGardenSky();
-    setupGalleryFilters();
-    setupGalleryToolbar();
     
     // Listen to canvas change to toggle Plant button disabled state
     const saveBtn = document.getElementById('save-gallery-btn');
@@ -46,9 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchSupabaseFlowers();
   }
 
-  // --- CELESTIAL NAV (OVERLAY TOGGLES, NO BODY SCROLL) ---
+  // --- NAV OVERLAYS TOGGLING ---
   function setupNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link-btn');
     const galleryOverlay = document.getElementById('gallery-archive');
     const closeGalleryBtn = document.getElementById('close-gallery-btn');
     const mobileGalleryBtn = document.getElementById('mobile-gallery-btn');
@@ -69,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Fixed bottom right button click
     if (mobileGalleryBtn) {
       mobileGalleryBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -77,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Close button click
     if (closeGalleryBtn) {
       closeGalleryBtn.addEventListener('click', () => {
         closeGallery();
@@ -91,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!paletteContainer) return;
     paletteContainer.innerHTML = '';
 
-    // Set initial canvas drawing color
     mainCanvas.currentColor = GARDEN_PALETTE[0].hex;
 
     GARDEN_PALETTE.forEach((color, idx) => {
@@ -113,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- DRAWING TOOLKIT INTERACTIONS ---
   function setupCanvasControls() {
-    // Actions
     const clearBtn = document.getElementById('clear-btn');
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
@@ -128,28 +120,14 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("Draw something first!", "danger");
         return;
       }
-
-      const titleInput = document.getElementById('doodle-title');
-      const authorInput = document.getElementById('doodle-author');
-      const descInput = document.getElementById('doodle-desc');
-
-      const title = titleInput.value.trim();
-      const author = authorInput.value.trim() || 'Anonymous';
-      const description = descInput.value.trim();
-
-      if (!title) {
-        showToast("Please enter a title for your flower!", "danger");
-        titleInput.focus();
-        return;
-      }
-      if (!description) {
-        showToast("Please describe your flower!", "danger");
-        descInput.focus();
-        return;
-      }
       
       const saveBtn = document.getElementById('save-gallery-btn');
       const originalText = saveBtn.innerHTML;
+      
+      // Default metadata to match minimalist annasgarden.dev database records
+      const title = 'Planted Flower';
+      const author = 'Gardener';
+      const description = 'A community flower in BHAVI KA KHET.';
       
       // Get the transparent PNG image directly from the canvas
       const transparentImgData = mainCanvas.canvas.toDataURL();
@@ -185,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
              
           imageSrc = publicData.publicUrl;
           
-          showToast(`Successfully planted "${title}" in the garden!`, 'success');
+          showToast(`Successfully planted flower!`, 'success');
         } catch (err) {
           console.error("Supabase plant upload failed, saving locally:", err);
           showToast("Failed to plant online. Saved in local session.", "danger");
@@ -194,14 +172,14 @@ document.addEventListener('DOMContentLoaded', () => {
           saveBtn.innerHTML = originalText;
         }
       } else {
-        showToast(`Successfully planted "${title}" in local session!`, 'success');
+        showToast(`Successfully planted flower in local session!`, 'success');
       }
 
       const newFlower = {
         id: newId,
         title: title,
         category: 'user',
-        tag: 'Guest Flower',
+        tag: 'Planted Flower',
         date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         likes: 0,
         author: author,
@@ -214,9 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
       renderGardenSky();
       
       // Reset controls
-      titleInput.value = '';
-      authorInput.value = '';
-      descInput.value = '';
       mainCanvas.clear();
       saveBtn.disabled = true;
 
@@ -323,19 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!layer) return;
     layer.innerHTML = '';
 
-    const searchQuery = document.getElementById('gallery-search') 
-      ? document.getElementById('gallery-search').value.toLowerCase().trim() 
-      : '';
-
-    // 1. Render transparent flowers directly on the bobbing island image
-    const filtered = flowersList.filter(item => {
-      const matchesSearch = item.title.toLowerCase().includes(searchQuery) ||
-                            (item.description && item.description.toLowerCase().includes(searchQuery)) ||
-                            item.author.toLowerCase().includes(searchQuery);
-      return matchesSearch;
-    });
-
-    filtered.forEach(flower => {
+    // 1. Render transparent flowers directly on the bobbing island image (No hover tooltips or click actions)
+    flowersList.forEach(flower => {
       const coords = getCoordinatesForId(flower.id);
       
       const node = document.createElement('div');
@@ -350,144 +314,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let mediaContent = '';
       if (flower.imageSrc) {
-        mediaContent = `<img src="${flower.imageSrc}" alt="${flower.title}" loading="lazy">`;
+        mediaContent = `<img src="${flower.imageSrc}" alt="Flower" loading="lazy">`;
       }
 
       node.innerHTML = `
         <div class="constellation-drawing">
           ${mediaContent}
         </div>
-        
-        <div class="star-tooltip">
-          <div class="tooltip-title hand-drawn">${flower.title}</div>
-          <div class="tooltip-meta">By ${flower.author}</div>
-        </div>
       `;
-
-      node.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openLightbox(flower);
-      });
 
       layer.appendChild(node);
     });
 
-    // 2. Render cards in the gallery overlay grid
+    // 2. Render cards in the gallery overlay grid (No metadata, no likes count, no buttons)
     const archiveGrid = document.getElementById('archive-grid');
     if (archiveGrid) {
       archiveGrid.innerHTML = '';
       
-      const archiveSearchQuery = (document.getElementById('archive-search') 
-        ? document.getElementById('archive-search').value.toLowerCase().trim() 
-        : '');
-      
-      let archiveFiltered = flowersList.filter(item => {
-        const matchesSearch = item.title.toLowerCase().includes(archiveSearchQuery) ||
-                              item.author.toLowerCase().includes(archiveSearchQuery) ||
-                              (item.description && item.description.toLowerCase().includes(archiveSearchQuery));
-        return matchesSearch;
-      });
-
-      const sortVal = (document.getElementById('archive-sort') 
-        ? document.getElementById('archive-sort').value 
-        : 'newest');
-        
-      if (sortVal === 'newest') {
-        archiveFiltered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-      } else if (sortVal === 'oldest') {
-        archiveFiltered.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
-      } else if (sortVal === 'liked') {
-        archiveFiltered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
-      }
-
       // Handle empty state tab display
       const emptyState = document.getElementById('gallery-empty-state');
       if (emptyState) {
-        if (archiveFiltered.length === 0) {
+        if (flowersList.length === 0) {
           emptyState.classList.remove('hidden');
         } else {
           emptyState.classList.add('hidden');
         }
       }
 
-      archiveFiltered.forEach(flower => {
+      flowersList.forEach(flower => {
         const card = document.createElement('div');
         card.className = 'archive-card';
 
         let mediaContent = '';
         if (flower.imageSrc) {
-          mediaContent = `<img src="${flower.imageSrc}" alt="${flower.title}" loading="lazy">`;
+          mediaContent = `<img src="${flower.imageSrc}" alt="Flower" loading="lazy">`;
         }
 
         card.innerHTML = `
           <div class="archive-media">
             ${mediaContent}
           </div>
-          <div class="archive-info">
-            <h4 class="archive-title hand-drawn">${flower.title}</h4>
-            <div class="archive-meta">By ${flower.author} &bull; ${flower.date}</div>
-          </div>
-          <div class="archive-footer">
-            <button class="archive-btn like-btn" data-action="like">
-              <span>♥</span> <span class="like-count-val">${flower.likes}</span>
-            </button>
-            <button class="archive-btn" data-action="inspect">
-              <span>🔍</span> Inspect
-            </button>
-          </div>
         `;
-
-        // Click handlers
-        const likeBtn = card.querySelector('[data-action="like"]');
-        likeBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          flower.likes++;
-          card.querySelector('.like-count-val').textContent = flower.likes;
-          showToast(`Liked "${flower.title}"!`, 'success');
-          renderGardenSky();
-        });
-
-        const inspectBtn = card.querySelector('[data-action="inspect"]');
-        inspectBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          openLightbox(flower);
-        });
-
-        card.addEventListener('click', () => {
-          openLightbox(flower);
-        });
 
         archiveGrid.appendChild(card);
       });
     }
   }
 
-  function setupGalleryFilters() {
-    const searchInput = document.getElementById('gallery-search');
-    if (searchInput) {
-      searchInput.addEventListener('input', () => {
-        renderGardenSky();
-      });
-    }
-  }
-
   // Gallery Toolbar Setup
   function setupGalleryToolbar() {
-    const archiveSearch = document.getElementById('archive-search');
-    const archiveSort = document.getElementById('archive-sort');
     const emptyStateBtn = document.getElementById('empty-state-draw-btn');
-
-    if (archiveSearch) {
-      archiveSearch.addEventListener('input', () => {
-        renderGardenSky();
-      });
-    }
-
-    if (archiveSort) {
-      archiveSort.addEventListener('change', () => {
-        renderGardenSky();
-      });
-    }
 
     if (emptyStateBtn) {
       emptyStateBtn.addEventListener('click', () => {
@@ -500,71 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (drawer) drawer.classList.add('active');
       });
     }
-  }
-
-  // --- LIGHTBOX FLOWS ---
-  function openLightbox(flower) {
-    const lightbox = document.getElementById('doodle-lightbox');
-    const mediaContainer = document.getElementById('lightbox-media-container');
-    const tagSpan = document.getElementById('lightbox-tag');
-    const titleHeader = document.getElementById('lightbox-title');
-    const authorSpan = document.getElementById('lightbox-author');
-    const dateSpan = document.getElementById('lightbox-date');
-    const descP = document.getElementById('lightbox-description');
-    const downloadBtn = document.getElementById('lightbox-download');
-    const likeBtn = document.getElementById('lightbox-like');
-    const likeCountSpan = document.getElementById('like-count');
-
-    // Populate media
-    mediaContainer.innerHTML = '';
-    if (flower.imageSrc) {
-      mediaContainer.innerHTML = `<img src="${flower.imageSrc}" alt="${flower.title}">`;
-    }
-
-    // Set Download Log Link
-    const logData = {
-      title: flower.title,
-      author: flower.author,
-      date: flower.date,
-      likes: flower.likes,
-      description: flower.description || 'A planted flower.',
-      imageSrc: flower.imageSrc
-    };
-    const jsonBlob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
-    downloadBtn.href = URL.createObjectURL(jsonBlob);
-    downloadBtn.download = `${flower.title.replace(/\s+/g, '_')}_log.json`;
-
-    // Details text
-    tagSpan.textContent = 'Flower';
-    titleHeader.textContent = flower.title;
-    authorSpan.textContent = flower.author;
-    dateSpan.textContent = flower.date;
-    descP.textContent = flower.description || 'No description provided.';
-    likeCountSpan.textContent = flower.likes;
-
-    // Reset like button action listener
-    const newLikeBtn = likeBtn.cloneNode(true);
-    likeBtn.parentNode.replaceChild(newLikeBtn, likeBtn);
-    newLikeBtn.addEventListener('click', () => {
-      flower.likes++;
-      likeCountSpan.textContent = flower.likes;
-      showToast(`Liked "${flower.title}"!`, 'success');
-      renderGardenSky();
-    });
-
-    // Show modal
-    lightbox.classList.add('active');
-    trapFocus(lightbox);
-
-    const closeBtn = document.getElementById('close-lightbox-btn');
-    const overlay = document.getElementById('lightbox-close-overlay');
-    const closeModal = () => {
-      lightbox.classList.remove('active');
-      releaseFocus();
-    };
-    
-    closeBtn.onclick = closeModal;
-    overlay.onclick = closeModal;
   }
 
   // --- FOCUS TRAPPING & ACCESSIBILITY HELPER ---
@@ -668,7 +479,6 @@ document.addEventListener('DOMContentLoaded', () => {
       let { data, error } = await query.order('created_at', { ascending: false }).limit(60);
       
       if (error && (error.message.includes('column') || error.code === 'PGRST204')) {
-        console.warn("Table does not have columns yet, trying fallback...");
         const fallbackQuery = supabase.from('drawings').select('path, caption, flagged, created_at');
         const fallbackRes = await fallbackQuery.order('created_at', { ascending: false }).limit(60);
         data = fallbackRes.data;
@@ -688,9 +498,9 @@ document.addEventListener('DOMContentLoaded', () => {
             date: row.created_at
               ? new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(new Date(row.created_at))
               : "Recent Plant",
-            likes: Math.floor(Math.random() * 20) + 5,
+            likes: 0,
             author: row.author || 'Anonymous',
-            description: row.description || 'A flower planted persistently in our garden catalog.',
+            description: row.description || '',
             imageSrc: publicData.publicUrl
           };
         });
