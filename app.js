@@ -354,7 +354,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const mergedImgData = mainCanvas.getMergedDataURL(true); // always dark celestial
       let imageSrc = mergedImgData;
 
-      const newId = `user-doodle-${Date.now()}`;
+      const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const filename = `${Date.now()}-${randomId}.png`;
+      const path = `public/${filename}`;
+      const newId = `db-doodle-${path.replace(/\//g, '_')}`;
 
       if (supabase) {
         try {
@@ -362,9 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
           saveBtn.innerHTML = `<span>⏳</span> Beaming Star...`;
           
           const blob = dataURLtoBlob(mergedImgData);
-          const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-          const filename = `${Date.now()}-${randomId}.png`;
-          const path = `public/${filename}`;
           
           const { error: uploadError } = await supabase.storage
              .from('drawings')
@@ -534,9 +534,24 @@ document.addEventListener('DOMContentLoaded', () => {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
     
-    // Scatter coordinates pseudo-randomly across the entire sky viewport (12% to 88%)
-    const x = 12 + (Math.abs(hash) % 76);
-    const y = 12 + (Math.abs(hash * 37) % 70);
+    // Scatter coordinates pseudo-randomly across the entire sky viewport (12% to 88% on X, 12% to 82% on Y)
+    let x = 12 + (Math.abs(hash) % 76);
+    let y = 12 + (Math.abs(hash * 37) % 70);
+    
+    // Deterministically push coordinates away if they overlap the central sun area
+    // Sun bounding box roughly: X in [38, 62], Y in [32, 68]
+    if (x >= 38 && x <= 62 && y >= 32 && y <= 68) {
+      if (hash % 2 === 0) {
+        // Push horizontally away from the center
+        x = x < 50 ? x - 25 : x + 25;
+      } else {
+        // Push vertically away from the center
+        y = y < 50 ? y - 25 : y + 25;
+      }
+      // Clamp coordinates to ensure they remain inside viewport boundaries
+      x = Math.max(12, Math.min(88, x));
+      y = Math.max(12, Math.min(82, y));
+    }
     
     return { x, y };
   }
@@ -961,10 +976,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        const dbDoodles = data.map((row, index) => {
+        const dbDoodles = data.map((row) => {
           const { data: publicData } = supabase.storage.from('drawings').getPublicUrl(row.path);
           return {
-            id: `db-doodle-${row.path.replace(/\//g, '_')}-${index}`,
+            id: `db-doodle-${row.path.replace(/\//g, '_')}`,
             title: row.caption || 'Unnamed Doodle',
             category: 'user',
             tag: 'Supabase Doodle',

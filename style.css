@@ -667,6 +667,7 @@ a {
   height: 44px;
   transform: translate(-50%, -50%); /* Center node on coordinates */
   cursor: pointer;
+  pointer-events: auto;
   z-index: 20;
   animation: star-float var(--float-duration, 5s) ease-in-out var(--float-delay, 0s) infinite alternate;
 }
