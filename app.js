@@ -534,16 +534,9 @@ document.addEventListener('DOMContentLoaded', () => {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
     
-    // Deterministic angle (0 to 2*PI)
-    const angle = ((Math.abs(hash) % 360) * Math.PI) / 180;
-    
-    // Deterministic radius: keep it outside the sun core (R_x > 20%, R_y > 22%)
-    // But keep it inside the viewport boundary (R_x < 42%, R_y < 38%)
-    const radiusX = 22 + (Math.abs(hash * 17) % 18); // 22% to 40% radius in X
-    const radiusY = 24 + (Math.abs(hash * 37) % 12); // 24% to 36% radius in Y
-    
-    const x = 50 + radiusX * Math.cos(angle);
-    const y = 50 + radiusY * Math.sin(angle);
+    // Scatter coordinates pseudo-randomly across the entire sky viewport (12% to 88%)
+    const x = 12 + (Math.abs(hash) % 76);
+    const y = 12 + (Math.abs(hash * 37) % 70);
     
     return { x, y };
   }
