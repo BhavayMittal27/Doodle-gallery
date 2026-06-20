@@ -1053,7 +1053,7 @@ a {
 /* --- TOAST NOTIFICATIONS --- */
 .toast-container {
   position: fixed;
-  bottom: 20px;
+  top: 20px;
   right: 20px;
   z-index: 1100;
   display: flex;
@@ -1071,7 +1071,7 @@ a {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  transform: translateY(50px);
+  transform: translateY(-50px);
   opacity: 0;
   transition: transform var(--transition-normal), opacity var(--transition-normal);
   filter: url(#space-wobble);
@@ -1080,6 +1080,37 @@ a {
 .toast.show {
   transform: translateY(0);
   opacity: 1;
+}
+
+/* --- FLOATING GALLERY BUTTON (ANNADEV PLACEMENT) --- */
+.floating-gallery-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 90;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border: 2px solid var(--border-color);
+  border-radius: 30px;
+  padding: 0.8rem 1.2rem;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: var(--hard-shadow);
+  filter: url(#space-wobble);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.floating-gallery-btn:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: var(--hard-shadow-hover);
+}
+
+.floating-gallery-btn:active {
+  transform: translateY(1px);
+  box-shadow: var(--hard-shadow-active);
 }
 
 .toast.success { 
