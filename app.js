@@ -6,7 +6,7 @@ import { supabase } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // --- STATE MANAGEMENT ---
-  let doodlesList = [...PORTFOLIO_DOODLES]; // Combines preloaded & database doodles
+  let doodlesList = []; // Clean slate, only user drawings from Supabase
   let currentFilter = 'all';
   
   // Canvas Instantiation
@@ -38,31 +38,64 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchSupabaseDoodles();
   }
 
-  // --- CELESTIAL NAV ---
+  // --- CELESTIAL NAV (OVERLAY TOGGLES, NO BODY SCROLL) ---
   function setupNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
-    const sections = document.querySelectorAll('.page-section');
-    const options = {
-      root: null,
-      threshold: 0.2,
-      rootMargin: '-80px 0px 0px 0px'
-    };
+    const galleryOverlay = document.getElementById('gallery-archive');
+    const closeGalleryBtn = document.getElementById('close-gallery-btn');
+    const floatingBtn = document.querySelector('.floating-gallery-btn');
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute('id');
-          navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === `#${id}`) {
-              link.classList.add('active');
-            }
-          });
+    function openGallery() {
+      if (galleryOverlay) {
+        galleryOverlay.classList.add('active');
+      }
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#gallery-archive') {
+          link.classList.add('active');
         }
       });
-    }, options);
+    }
 
-    sections.forEach(sec => observer.observe(sec));
+    function closeGallery() {
+      if (galleryOverlay) {
+        galleryOverlay.classList.remove('active');
+      }
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#space') {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    // Intercept nav links clicks
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = link.getAttribute('href');
+        if (target === '#gallery-archive') {
+          openGallery();
+        } else {
+          closeGallery();
+        }
+      });
+    });
+
+    // Intercept floating button click
+    if (floatingBtn) {
+      floatingBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openGallery();
+      });
+    }
+
+    // Close button click
+    if (closeGalleryBtn) {
+      closeGalleryBtn.addEventListener('click', () => {
+        closeGallery();
+      });
+    }
   }
 
   // --- PALETTE UI GENERATION ---
@@ -661,7 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
           };
         });
         
-        doodlesList = [...PORTFOLIO_DOODLES, ...dbDoodles];
+        doodlesList = [...dbDoodles];
         renderCelestialSky();
         showToast("Astronomical database loaded!", "info");
       }
