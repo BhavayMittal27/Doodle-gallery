@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StellaPort | Constellation Canvas & Astronomical Resume</title>
+  <title>StellaPort | Celestial Space Garden</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Walter+Turncoat&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- CSS Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
@@ -112,93 +112,34 @@
         </div>
 
         <!-- Star Forge Drawing Canvas Column -->
-        <div class="controls-panel space-border" id="forge-panel">
+        <div class="controls-panel" id="forge-panel">
           <!-- Close drawer button for mobile screen mode -->
           <button class="close-drawer-btn" id="close-drawer-btn" aria-label="Close drawing panel">&times;</button>
           
           <h3 class="panel-title hand-drawn">Celestial Forge</h3>
           
-          <div class="canvas-board space-border">
-            <div class="canvas-container">
-              <canvas id="paint-canvas"></canvas>
-            </div>
-          </div>
-
-          <!-- Tool Options -->
-          <div class="control-group">
-            <div class="tool-selector">
-              <button class="tool-btn active" data-tool="brush" title="Star Beam">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                </svg>
-                <span class="tool-text hand-drawn">Star Beam</span>
-              </button>
-              <button class="tool-btn" data-tool="highlighter" title="Nebula Dust">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                </svg>
-                <span class="tool-text hand-drawn">Nebula Dust</span>
-              </button>
-              <button class="tool-btn" data-tool="eraser" title="Void Eraser">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                </svg>
-                <span class="tool-text hand-drawn">Void Eraser</span>
-              </button>
+          <div class="studio-workspace">
+            <!-- Left Side: Color Picker Vertical Column -->
+            <div class="color-picker-column">
+              <div class="color-palette" id="color-palette">
+                <!-- Rebuilt dynamically in JS -->
+              </div>
             </div>
             
-            <div class="shape-selector">
-              <button class="shape-btn" data-shape="free" title="Freehand Star">✧ Star</button>
-              <button class="shape-btn" data-shape="line" title="Star Link">╱ Link</button>
-              <button class="shape-btn" data-shape="rect" title="Solar Sector">☐ Sector</button>
-              <button class="shape-btn" data-shape="circle" title="Planet Body">◯ Planet</button>
+            <!-- Right Side: Canvas Studio Drawing Box -->
+            <div class="canvas-action-area">
+              <div class="canvas-container">
+                <canvas id="paint-canvas"></canvas>
+                <button id="clear-btn" class="canvas-clear-btn" title="Clear Canvas">↺</button>
+              </div>
+              
+              <div class="save-actions">
+                <input type="text" id="doodle-title" class="space-input hand-drawn" placeholder="Name your star..." maxlength="25">
+                <button id="save-gallery-btn" class="space-btn primary-btn hand-drawn">
+                  ☄️ Cast Star
+                </button>
+              </div>
             </div>
-          </div>
-
-          <!-- Color Swatches Swapper -->
-          <div class="control-group">
-            <div class="color-palette" id="color-palette">
-              <!-- Rebuilt dynamically in JS -->
-            </div>
-            <div class="custom-color-picker">
-              <input type="color" id="custom-color" value="#ffffff">
-              <label for="custom-color" class="hand-drawn">Spectrum</label>
-            </div>
-          </div>
-
-          <!-- Size Width Selector -->
-          <div class="control-group">
-            <div class="slider-label">
-              <span class="hand-drawn">Beam Width</span>
-              <span id="brush-size-val" class="hand-drawn">6px</span>
-            </div>
-            <input type="range" id="brush-size" min="1" max="50" value="6" class="space-slider">
-          </div>
-
-          <!-- Actions Panel Buttons -->
-          <div class="control-group action-group">
-            <button id="undo-btn" class="space-btn secondary-btn flex-btn" title="Undo (Ctrl+Z)">
-              <span>↩</span>
-            </button>
-            <button id="redo-btn" class="space-btn secondary-btn flex-btn" title="Redo (Ctrl+Y)">
-              <span>↪</span>
-            </button>
-            <button id="clear-btn" class="space-btn danger-btn flex-btn" title="Vanish All">
-              <span>🗑</span>
-            </button>
-          </div>
-
-          <!-- Save/Publish Form -->
-          <div class="save-actions space-border-top">
-            <input type="text" id="doodle-title" class="space-input hand-drawn" placeholder="Name your star..." maxlength="25">
-            <button id="save-gallery-btn" class="space-btn primary-btn full-btn hand-drawn">
-              <span>✨</span> Cast Star
-            </button>
-            <button id="download-btn" class="space-btn secondary-btn full-btn hand-drawn">
-              <span>↓</span> Save PNG
-            </button>
           </div>
         </div>
       </div>

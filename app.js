@@ -71,6 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!paletteContainer) return;
     paletteContainer.innerHTML = '';
 
+    // Set initial canvas drawing color to the first palette item
+    if (CELESTIAL_PALETTE.length > 0) {
+      mainCanvas.currentColor = CELESTIAL_PALETTE[0].hex;
+    }
+
     CELESTIAL_PALETTE.forEach((color, idx) => {
       const bubble = document.createElement('button');
       bubble.className = `color-bubble ${idx === 0 ? 'active' : ''}`;
