@@ -293,18 +293,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- STAR POSITIONING & RENDERING ON ISLAND ---
-  // Generates deterministic coordinates relative to the island surface bounds
+  // Generates deterministic coordinates forming an orbit around the central sun
   function getCoordinatesForId(id) {
     let hash = 0;
     for (let i = 0; i < id.length; i++) {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
     
-    // Deterministic X percentage between 18% and 82%
-    const x = 18 + (Math.abs(hash) % 65);
+    // Deterministic angle (0 to 2*PI)
+    const angle = ((Math.abs(hash) % 360) * Math.PI) / 180;
     
-    // Deterministic Y percentage between 20% and 72%
-    const y = 20 + (Math.abs(hash * 37) % 53);
+    // Deterministic radius: keep it outside the sun core (R_x > 20%, R_y > 22%)
+    // But keep it inside the viewport boundary (R_x < 42%, R_y < 38%)
+    const radiusX = 22 + (Math.abs(hash * 17) % 18); // 22% to 40% radius in X
+    const radiusY = 24 + (Math.abs(hash * 37) % 12); // 24% to 36% radius in Y
+    
+    const x = 50 + radiusX * Math.cos(angle);
+    const y = 50 + radiusY * Math.sin(angle);
     
     return { x, y };
   }

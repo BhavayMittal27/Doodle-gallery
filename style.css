@@ -436,11 +436,12 @@ a {
   100% { transform: translateY(12px); }
 }
 
-.island-img {
-  width: 100%;
-  height: auto;
+.doodled-sun {
+  width: 130px;
+  height: 130px;
   display: block;
-  filter: drop-shadow(4px 4px 0px #2b2b2b) drop-shadow(0 0 16px rgba(255, 215, 64, 0.35));
+  filter: drop-shadow(3px 3px 0px #2b2b2b) drop-shadow(0 0 12px rgba(255, 215, 64, 0.3));
+  z-index: 5;
 }
 
 .constellations-layer {
