@@ -592,13 +592,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       node.innerHTML = `
-        <div class="star-glow-dot"></div>
-        <div class="star-pulse-ring"></div>
+        <div class="constellation-drawing">
+          ${mediaContent}
+        </div>
         
         <div class="star-tooltip space-border">
-          <div class="tooltip-media">
-            ${mediaContent}
-          </div>
           <div class="tooltip-title hand-drawn">${doodle.title}</div>
           <div class="tooltip-meta">By ${doodle.author}</div>
         </div>

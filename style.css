@@ -663,13 +663,16 @@ a {
 /* Constellations Star Nodes */
 .constellation-node {
   position: absolute;
-  width: 44px;
-  height: 44px;
+  width: 75px;
+  height: 75px;
   transform: translate(-50%, -50%); /* Center node on coordinates */
   cursor: pointer;
   pointer-events: auto;
   z-index: 20;
   animation: star-float var(--float-duration, 5s) ease-in-out var(--float-delay, 0s) infinite alternate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes star-float {
@@ -677,52 +680,45 @@ a {
   100% { transform: translate(-50%, -50%) translateY(5px); }
 }
 
-/* Glowing Star Dot */
-.star-glow-dot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
-  background-color: var(--ink-secondary);
-  border-radius: 50%;
-  box-shadow: 0 0 12px var(--ink-secondary), 0 0 20px var(--ink-secondary);
+/* Floating Constellation Drawings */
+.constellation-drawing {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
 }
 
-.star-pulse-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 26px;
-  height: 26px;
-  border: 1.5px solid var(--ink-secondary);
-  border-radius: 50%;
-  opacity: 0;
-  animation: star-pulse 2.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+.constellation-drawing img,
+.constellation-drawing svg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
-@keyframes star-pulse {
-  0% { width: 10px; height: 10px; opacity: 0.8; }
-  100% { width: 36px; height: 36px; opacity: 0; }
+.constellation-drawing img {
+  mix-blend-mode: screen; /* Blend out black background from saved PNGs */
 }
 
-/* Star Custom Types coloring */
-.constellation-node.type-portfolio .star-glow-dot {
-  background-color: var(--ink-highlight);
-  box-shadow: 0 0 12px var(--ink-highlight), 0 0 20px var(--ink-highlight);
+/* Specific glows for different doodle categories */
+.constellation-node.type-portfolio .constellation-drawing {
+  filter: drop-shadow(0 0 5px var(--ink-highlight)) drop-shadow(0 0 10px rgba(255, 215, 64, 0.4));
 }
-.constellation-node.type-portfolio .star-pulse-ring {
-  border-color: var(--ink-highlight);
+.constellation-node.type-portfolio:hover .constellation-drawing {
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 8px var(--ink-highlight)) drop-shadow(0 0 16px rgba(255, 215, 64, 0.6));
 }
 
-.constellation-node.type-user .star-glow-dot {
-  background-color: var(--ink-primary);
-  box-shadow: 0 0 12px var(--ink-primary), 0 0 20px var(--ink-primary);
+.constellation-node.type-user .constellation-drawing {
+  filter: drop-shadow(0 0 5px var(--ink-primary)) drop-shadow(0 0 10px rgba(255, 64, 129, 0.4));
 }
-.constellation-node.type-user .star-pulse-ring {
-  border-color: var(--ink-primary);
+.constellation-node.type-user:hover .constellation-drawing {
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 8px var(--ink-primary)) drop-shadow(0 0 16px rgba(255, 64, 129, 0.6));
 }
 
 /* Star Tooltip Popover */
