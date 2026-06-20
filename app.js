@@ -458,7 +458,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Fetch count of active drawings (lifetime drawings count)
       const { count, error: countError } = await supabase
         .from('drawings')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .or('flagged.is.null,flagged.eq.false');
 
       if (countError) throw countError;
       totalFlowersCount = count || 0;
@@ -467,6 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data, error } = await supabase
         .from('drawings')
         .select('path, caption, flagged, created_at, author, description')
+        .or('flagged.is.null,flagged.eq.false')
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -637,11 +639,15 @@ document.addEventListener('DOMContentLoaded', () => {
   async function fetchSupabaseFlowers() {
     if (!supabase) return;
     try {
-      let query = supabase.from('drawings').select('path, caption, flagged, created_at, author, description');
+      let query = supabase.from('drawings')
+        .select('path, caption, flagged, created_at, author, description')
+        .or('flagged.is.null,flagged.eq.false');
       let { data, error } = await query.order('created_at', { ascending: false }).limit(60);
       
       if (error && (error.message.includes('column') || error.code === 'PGRST204')) {
-        const fallbackQuery = supabase.from('drawings').select('path, caption, flagged, created_at');
+        const fallbackQuery = supabase.from('drawings')
+          .select('path, caption, flagged, created_at')
+          .or('flagged.is.null,flagged.eq.false');
         const fallbackRes = await fallbackQuery.order('created_at', { ascending: false }).limit(60);
         data = fallbackRes.data;
         error = fallbackRes.error;
