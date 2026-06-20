@@ -106,114 +106,171 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- SPACE ART CLASSIFIER / MODERATION ---
+  function classifyCosmicDrawing() {
+    const canvas = document.getElementById('paint-canvas');
+    if (!canvas) return { isValid: false, reason: 'No canvas found.' };
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Get image data to count active pixels
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+    
+    let activePixels = 0;
+    let minX = width, maxX = 0;
+    let minY = height, maxY = 0;
+    
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = (y * width + x) * 4;
+        const alpha = data[idx + 3];
+        if (alpha > 10) { // non-transparent pixels
+          activePixels++;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    
+    // 1. Check if user has drawn anything
+    if (activePixels === 0) {
+      return { isValid: false, reason: "Please draw something first!" };
+    }
+    
+    const dpr = window.devicePixelRatio || 1;
+    // 2. Check if too small
+    if (activePixels < 25 * dpr * dpr) {
+      return { isValid: false, reason: "not a space shit! That's too small to be a constellation." };
+    }
+    
+    // 3. Check if too dense (just scribbles)
+    const totalPixels = width * height;
+    const density = activePixels / totalPixels;
+    if (density > 0.40) {
+      return { isValid: false, reason: "not a space shit! That's just a black hole of scribbles." };
+    }
+    
+    const boxW = maxX - minX;
+    const boxH = maxY - minY;
+    const aspectRatio = boxW / boxH;
+    
+    // 4. Bounding box size check
+    if (boxW < 12 * dpr && boxH < 12 * dpr) {
+      return { isValid: false, reason: "not a space shit! That's just a tiny speck." };
+    }
+    
+    // 5. Keyword analysis
+    const titleInput = document.getElementById('doodle-title');
+    const title = (titleInput ? titleInput.value : '').toLowerCase().trim();
+    
+    const spaceKeywords = ['star', 'planet', 'ufo', 'alien', 'comet', 'galaxy', 'moon', 'sun', 'meteor', 'rocket', 'saturn', 'mars', 'jupiter', 'constellation', 'nebula', 'asteroid', 'orbit', 'spaceship', 'cosmos', 'saucer', 'shuttle', 'sol', 'nova', 'supernova', 'zenith'];
+    const hasSpaceKeyword = spaceKeywords.some(keyword => title.includes(keyword));
+    
+    // If aspect ratio is extremely narrow (e.g. drawing just a single vertical or horizontal slash)
+    if ((aspectRatio > 6 || aspectRatio < 0.17) && !hasSpaceKeyword) {
+      return { isValid: false, reason: "not a space shit! That is just a straight line." };
+    }
+    
+    return { isValid: true };
+  }
+
   // --- DRAWING TOOLKIT INTERACTIONS ---
   function setupCanvasControls() {
-    // Brush Size
-    const sizeSlider = document.getElementById('brush-size');
-    const sizeVal = document.getElementById('brush-size-val');
-    sizeSlider.addEventListener('input', (e) => {
-      mainCanvas.brushSize = e.target.value;
-      sizeVal.textContent = `${e.target.value}px`;
-    });
-
-    // Opacity
-    const opacitySlider = document.getElementById('brush-opacity');
-    const opacityVal = document.getElementById('brush-opacity-val');
-    opacitySlider.addEventListener('input', (e) => {
-      mainCanvas.brushOpacity = e.target.value / 100;
-      opacityVal.textContent = `${e.target.value}%`;
-    });
-
-    // Tool selectors
-    const toolBtns = document.querySelectorAll('.tool-btn');
-    toolBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        toolBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        mainCanvas.currentTool = btn.dataset.tool;
-      });
-    });
-
-    // Shape selectors
-    const shapeBtns = document.querySelectorAll('.shape-btn');
-    shapeBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        shapeBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        mainCanvas.currentShape = btn.dataset.shape;
-      });
-    });
-
     // Actions
-    document.getElementById('undo-btn').addEventListener('click', () => mainCanvas.undo());
-    document.getElementById('redo-btn').addEventListener('click', () => mainCanvas.redo());
-    document.getElementById('clear-btn').addEventListener('click', () => {
-      mainCanvas.clear();
-      showToast('Forge wiped clean!', 'info');
-    });
+    const clearBtn = document.getElementById('clear-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        mainCanvas.clear();
+        showToast('Forge wiped clean!', 'info');
+      });
+    }
 
-    // Download PNG
-    document.getElementById('download-btn').addEventListener('click', () => {
-      const dataUrl = mainCanvas.getMergedDataURL(true); // always dark celestial backdrop
-      const link = document.createElement('a');
-      link.download = `constellation_${Date.now()}.png`;
-      link.href = dataUrl;
-      link.click();
-      showToast('Constellation chart downloaded!', 'success');
-    });
+    const undoBtn = document.getElementById('undo-btn');
+    if (undoBtn) {
+      undoBtn.addEventListener('click', () => mainCanvas.undo());
+    }
+
+    const redoBtn = document.getElementById('redo-btn');
+    if (redoBtn) {
+      redoBtn.addEventListener('click', () => mainCanvas.redo());
+    }
+
+    const downloadBtn = document.getElementById('download-btn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', () => {
+        const dataUrl = mainCanvas.getMergedDataURL(true);
+        const link = document.createElement('a');
+        link.download = `constellation_${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+        showToast('Constellation chart downloaded!', 'success');
+      });
+    }
 
     // Save/Post to Constellation Garden Island
     document.getElementById('save-gallery-btn').addEventListener('click', async () => {
-      const titleInput = document.getElementById('doodle-title');
-      const title = titleInput.value.trim() || 'Unnamed Star';
-      
-      const saveBtn = document.getElementById('save-gallery-btn');
-      const originalText = saveBtn.innerHTML;
-      
-      // Get the image merged with space texture
-      const mergedImgData = mainCanvas.getMergedDataURL(true); // always dark celestial
-      let imageSrc = mergedImgData;
+    // Check if the drawing is valid space art
+    const check = classifyCosmicDrawing();
+    if (!check.isValid) {
+      showToast(check.reason, "danger");
+      return;
+    }
 
-      const newId = `user-doodle-${Date.now()}`;
+    const titleInput = document.getElementById('doodle-title');
+    const title = titleInput.value.trim() || 'Unnamed Star';
+    
+    const saveBtn = document.getElementById('save-gallery-btn');
+    const originalText = saveBtn.innerHTML;
+    
+    // Get the image merged with space texture
+    const mergedImgData = mainCanvas.getMergedDataURL(true); // always dark celestial
+    let imageSrc = mergedImgData;
 
-      if (supabase) {
-        try {
-          saveBtn.disabled = true;
-          saveBtn.innerHTML = `<span>⏳</span> Beaming Star...`;
-          
-          const blob = dataURLtoBlob(mergedImgData);
-          const filename = `${Date.now()}-${crypto.randomUUID()}.png`;
-          const path = `public/${filename}`;
-          
-          const { error: uploadError } = await supabase.storage
-             .from('drawings')
-             .upload(path, blob, { contentType: 'image/png', upsert: false });
-             
-          if (uploadError) throw uploadError;
-          
-          const { error: insertError } = await supabase
-             .from('drawings')
-             .insert([{ path, caption: title, flagged: false }]);
-             
-          if (insertError) throw insertError;
-          
-          const { data: publicData } = supabase.storage
-             .from('drawings')
-             .getPublicUrl(path);
-             
-          imageSrc = publicData.publicUrl;
-          
-          showToast(`Successfully birthed "${title}" in the garden!`, 'success');
-        } catch (err) {
-          console.error("Supabase stargaze upload failed, saving locally:", err);
-          showToast("Failed to beam online. Saved in local session.", "danger");
-        } finally {
-          saveBtn.disabled = false;
-          saveBtn.innerHTML = originalText;
-        }
-      } else {
-        showToast(`Successfully birthed "${title}" in local session!`, 'success');
+    const newId = `user-doodle-${Date.now()}`;
+
+    if (supabase) {
+      try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<span>⏳</span> Beaming Star...`;
+        
+        const blob = dataURLtoBlob(mergedImgData);
+        const filename = `${Date.now()}-${crypto.randomUUID()}.png`;
+        const path = `public/${filename}`;
+        
+        const { error: uploadError } = await supabase.storage
+           .from('drawings')
+           .upload(path, blob, { contentType: 'image/png', upsert: false });
+           
+        if (uploadError) throw uploadError;
+        
+        const { error: insertError } = await supabase
+           .from('drawings')
+           .insert([{ path, caption: title, flagged: false }]);
+           
+        if (insertError) throw insertError;
+        
+        const { data: publicData } = supabase.storage
+           .from('drawings')
+           .getPublicUrl(path);
+           
+        imageSrc = publicData.publicUrl;
+        
+        showToast(`Successfully birthed "${title}" in the garden!`, 'success');
+      } catch (err) {
+        console.error("Supabase stargaze upload failed, saving locally:", err);
+        showToast("Failed to beam online. Saved in local session.", "danger");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
       }
+    } else {
+      showToast(`Successfully birthed "${title}" in local session!`, 'success');
+    }
 
       const newDoodle = {
         id: newId,
