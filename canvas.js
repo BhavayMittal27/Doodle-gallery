@@ -80,6 +80,13 @@ class SketchCanvas {
     if (tempCanvas && tempCtx) {
       this.ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width / dpr, tempCanvas.height / dpr);
     }
+
+    // Clamp keyboard coordinates to new dimensions on resize
+    const cssW = this.canvas.width / dpr;
+    const cssH = this.canvas.height / dpr;
+    this.kbdX = Math.min(cssW, Math.max(0, this.kbdX));
+    this.kbdY = Math.min(cssH, Math.max(0, this.kbdY));
+    this.updateKbdCursor();
   }
 
   setupListeners() {

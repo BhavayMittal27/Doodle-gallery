@@ -156,15 +156,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!localStorage.getItem('doodle_gallery_onboarded')) {
       banner.classList.add('active');
+      setTimeout(() => trapFocus(banner), 100);
     }
 
     closeBtn.addEventListener('click', () => {
       banner.classList.remove('active');
       localStorage.setItem('doodle_gallery_onboarded', 'true');
+      releaseFocus();
       
       // Open Draw drawer panel
       const drawer = document.getElementById('forge-panel');
-      if (drawer) drawer.classList.add('active');
+      if (drawer) {
+        drawer.classList.add('active');
+        const firstInput = drawer.querySelector('input');
+        if (firstInput) setTimeout(() => firstInput.focus(), 100);
+      }
     });
   }
 
@@ -483,6 +489,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (cancelDiscardBtn) {
       cancelDiscardBtn.addEventListener('click', () => {
+        if (unsavedModal) {
+          unsavedModal.classList.remove('active');
+          releaseFocus();
+        }
+      });
+    }
+
+    const unsavedOverlay = document.getElementById('unsaved-close-overlay');
+    if (unsavedOverlay) {
+      unsavedOverlay.addEventListener('click', () => {
         if (unsavedModal) {
           unsavedModal.classList.remove('active');
           releaseFocus();
