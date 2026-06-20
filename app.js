@@ -164,11 +164,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return { isValid: false, reason: "not a space shit! That's just a tiny speck." };
     }
     
-    // 5. Keyword analysis
+    // 5. Sun check (Cannot draw another sun)
     const titleInput = document.getElementById('doodle-title');
     const title = (titleInput ? titleInput.value : '').toLowerCase().trim();
     
-    const spaceKeywords = ['star', 'planet', 'ufo', 'alien', 'comet', 'galaxy', 'moon', 'sun', 'meteor', 'rocket', 'saturn', 'mars', 'jupiter', 'constellation', 'nebula', 'asteroid', 'orbit', 'spaceship', 'cosmos', 'saucer', 'shuttle', 'sol', 'nova', 'supernova', 'zenith'];
+    if (title.includes('sun') || title === 'sol' || title.includes('sol ')) {
+      return { isValid: false, reason: "no 2 suns mf" };
+    }
+    
+    // 6. Keyword analysis (excludes 'sun' and 'sol' to enforce specific warning above)
+    const spaceKeywords = ['star', 'planet', 'ufo', 'alien', 'comet', 'galaxy', 'moon', 'meteor', 'rocket', 'saturn', 'mars', 'jupiter', 'constellation', 'nebula', 'asteroid', 'orbit', 'spaceship', 'cosmos', 'saucer', 'shuttle', 'nova', 'supernova', 'zenith'];
     const hasSpaceKeyword = spaceKeywords.some(keyword => title.includes(keyword));
     
     // If aspect ratio is extremely narrow (e.g. drawing just a single vertical or horizontal slash)
@@ -396,6 +401,10 @@ document.addEventListener('DOMContentLoaded', () => {
       node.setAttribute('data-star-id', doodle.id);
       node.style.left = `${coords.x}%`;
       node.style.top = `${coords.y}%`;
+
+      // Set individual float animations variables deterministically based on coordinates
+      node.style.setProperty('--float-duration', `${4 + (Math.abs(coords.x + coords.y) % 5)}s`);
+      node.style.setProperty('--float-delay', `${-(Math.abs(coords.x * coords.y) % 8)}s`);
 
       let mediaContent = '';
       if (doodle.svg) {

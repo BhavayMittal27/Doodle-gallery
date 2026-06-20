@@ -668,6 +668,12 @@ a {
   transform: translate(-50%, -50%); /* Center node on coordinates */
   cursor: pointer;
   z-index: 20;
+  animation: star-float var(--float-duration, 5s) ease-in-out var(--float-delay, 0s) infinite alternate;
+}
+
+@keyframes star-float {
+  0% { transform: translate(-50%, -50%) translateY(-5px); }
+  100% { transform: translate(-50%, -50%) translateY(5px); }
 }
 
 /* Glowing Star Dot */
