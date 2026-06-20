@@ -840,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nav = document.querySelector('.app-nav');
     const footer = document.querySelector('.app-footer');
     if (container) container.setAttribute('inert', '');
-    if (nav) nav.setAttribute('inert', '');
+    if (nav && modal.id !== 'gallery-archive') nav.setAttribute('inert', '');
     if (footer) footer.setAttribute('inert', '');
     modal.removeAttribute('inert');
 

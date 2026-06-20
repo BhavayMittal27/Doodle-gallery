@@ -792,7 +792,7 @@ a {
   width: 100vw;
   height: 100vh;
   background-color: var(--bg-main); /* warm parchment #fffff3 */
-  z-index: 1000;
+  z-index: 900;
   overflow-y: auto;
   padding: 3rem 2rem 2rem 2rem;
   display: none; /* hidden by default */
@@ -1328,7 +1328,7 @@ a {
   width: 90%;
   max-width: 1200px;
   background-color: var(--bg-card);
-  z-index: 1000;
+  z-index: 920;
   display: flex;
   justify-content: space-between;
   align-items: center;
