@@ -277,7 +277,8 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBtn.innerHTML = `<span>⏳</span> Beaming Star...`;
         
         const blob = dataURLtoBlob(mergedImgData);
-        const filename = `${Date.now()}-${crypto.randomUUID()}.png`;
+        const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const filename = `${Date.now()}-${randomId}.png`;
         const path = `public/${filename}`;
         
         const { error: uploadError } = await supabase.storage
