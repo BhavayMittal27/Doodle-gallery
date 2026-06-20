@@ -661,6 +661,23 @@ a {
   }
 }
 
+/* --- GALLERY PAGINATION --- */
+.gallery-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px dashed var(--border-color);
+  width: 100%;
+}
+
+.gallery-pagination span {
+  font-size: 1.1rem;
+  color: var(--text-green);
+}
+
 /* --- RESPONSIVE MEDIA QUERIES --- */
 @media (max-width: 768px) {
   .garden-title {

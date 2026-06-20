@@ -6,7 +6,11 @@ import { supabase } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // --- STATE MANAGEMENT ---
-  let flowersList = []; // Clean slate, only user drawings from Supabase
+  let flowersList = []; // For the grassy island (up to 60 recent flowers)
+  let galleryFlowersList = []; // For the gallery overlay (paginated, 200 items per page)
+  let galleryPage = 1;
+  const itemsPerPage = 200;
+  let totalFlowersCount = 0;
   
   // Canvas Instantiation
   const mainCanvas = new SketchCanvas('paint-canvas');
@@ -29,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCanvasControls();
     setupMobileDrawer();
     renderGardenSky();
+    setupGalleryToolbar();
     
     // Listen to canvas change to toggle Plant button disabled state
     const saveBtn = document.getElementById('save-gallery-btn');
@@ -54,6 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
         galleryOverlay.classList.add('active');
         trapFocus(galleryOverlay);
         document.body.style.overflow = 'hidden';
+        
+        // Fetch first page of gallery when opened
+        galleryPage = 1;
+        fetchGalleryPage(galleryPage);
       }
     }
 
@@ -187,9 +196,22 @@ document.addEventListener('DOMContentLoaded', () => {
         imageSrc: imageSrc
       };
 
-      // Add to list and re-render
+      // Add to island list and re-render
       flowersList.unshift(newFlower);
+      if (flowersList.length > 60) {
+        flowersList.pop(); // Keep island clean
+      }
       renderGardenSky();
+      
+      // If the gallery overlay is active, also add to gallery list and re-render
+      const galleryOverlay = document.getElementById('gallery-archive');
+      if (galleryOverlay && galleryOverlay.classList.contains('active')) {
+        galleryFlowersList.unshift(newFlower);
+        if (galleryFlowersList.length > itemsPerPage) {
+          galleryFlowersList.pop();
+        }
+        renderGalleryGrid();
+      }
       
       // Reset controls
       mainCanvas.clear();
@@ -352,8 +374,10 @@ document.addEventListener('DOMContentLoaded', () => {
       node.appendChild(drawingDiv);
       layer.appendChild(node);
     });
+  }
 
-    // 2. Render cards in the gallery overlay grid (No metadata, no likes count, no buttons)
+  // 2. Render cards in the gallery overlay grid (No metadata, no likes count, no buttons)
+  function renderGalleryGrid() {
     const archiveGrid = document.getElementById('archive-grid');
     if (archiveGrid) {
       archiveGrid.innerHTML = '';
@@ -361,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Handle empty state tab display
       const emptyState = document.getElementById('gallery-empty-state');
       if (emptyState) {
-        if (flowersList.length === 0) {
+        if (galleryFlowersList.length === 0) {
           emptyState.classList.remove('hidden');
         } else {
           emptyState.classList.add('hidden');
@@ -373,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.loadedFlowers = new Set();
       }
 
-      flowersList.forEach(flower => {
+      galleryFlowersList.forEach(flower => {
         const item = document.createElement('div');
         const hasLoaded = window.loadedFlowers.has(flower.id);
         
@@ -414,9 +438,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Gallery Toolbar Setup
+  // Fetch paginated page of flowers from Supabase
+  async function fetchGalleryPage(page) {
+    if (!supabase) return;
+
+    const prevBtn = document.getElementById('prev-page-btn');
+    const nextBtn = document.getElementById('next-page-btn');
+    const pageInfo = document.getElementById('page-info');
+    const archiveGrid = document.getElementById('archive-grid');
+
+    if (archiveGrid) {
+      archiveGrid.innerHTML = '<div class="hand-drawn" style="grid-column: 1/-1; text-align: center; font-size: 1.5rem; color: var(--text-green); padding: 2rem 0;">Loading flowers... 🌸</div>';
+    }
+
+    try {
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
+      // Fetch count of active drawings (lifetime drawings count)
+      const { count, error: countError } = await supabase
+        .from('drawings')
+        .select('*', { count: 'exact', head: true });
+
+      if (countError) throw countError;
+      totalFlowersCount = count || 0;
+
+      // Fetch the requested page data
+      const { data, error } = await supabase
+        .from('drawings')
+        .select('path, caption, flagged, created_at, author, description')
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      if (data) {
+        galleryFlowersList = data.map((row) => {
+          const { data: publicData } = supabase.storage.from('drawings').getPublicUrl(row.path);
+          return {
+            id: `db-doodle-${row.path.replace(/\//g, '_')}`,
+            title: row.caption || 'Unnamed Flower',
+            category: 'user',
+            imageSrc: publicData.publicUrl
+          };
+        });
+
+        renderGalleryGrid();
+      }
+
+      // Update Pagination controls state
+      const totalPages = Math.ceil(totalFlowersCount / itemsPerPage) || 1;
+      if (pageInfo) {
+        pageInfo.textContent = `Page ${page} of ${totalPages}`;
+      }
+      if (prevBtn) prevBtn.disabled = page === 1;
+      if (nextBtn) nextBtn.disabled = page >= totalPages;
+
+    } catch (err) {
+      console.error("Error loading gallery page:", err);
+      if (archiveGrid) {
+        archiveGrid.innerHTML = '<div class="hand-drawn" style="grid-column: 1/-1; text-align: center; color: #e74c3c; padding: 2rem 0;">Failed to load flowers.</div>';
+      }
+    }
+  }
+
+  // Gallery Toolbar and Pagination Setup
   function setupGalleryToolbar() {
     const emptyStateBtn = document.getElementById('empty-state-draw-btn');
+    const prevBtn = document.getElementById('prev-page-btn');
+    const nextBtn = document.getElementById('next-page-btn');
 
     if (emptyStateBtn) {
       emptyStateBtn.addEventListener('click', () => {
@@ -427,6 +517,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const drawer = document.getElementById('forge-panel');
         if (drawer) drawer.classList.add('active');
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (galleryPage > 1) {
+          galleryPage--;
+          fetchGalleryPage(galleryPage);
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(totalFlowersCount / itemsPerPage) || 1;
+        if (galleryPage < totalPages) {
+          galleryPage++;
+          fetchGalleryPage(galleryPage);
+        }
       });
     }
   }
