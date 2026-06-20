@@ -3,71 +3,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DoodlePort | Sketch Resume & Gallery</title>
+  <title>StellaPort | Constellation Canvas & Astronomical Resume</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- CSS Stylesheet -->
-  <script type="module" crossorigin src="./assets/index-uSRzjOOR.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CBzWqKO6.css">
+  <!-- CSS Stylesheet -->
+  <script type="module" crossorigin src="./assets/index-CZ27YIfd.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Bwxm3ks_.css">
 </head>
-<body class="theme-paper">
+<body class="theme-space">
 
-  <!-- SVG Filters for Hand-drawn / Sketch Wobble Effect -->
+  <!-- SVG Filters for Celestial Glow Effects -->
   <svg style="position: absolute; width: 0; height: 0; pointer-events: none;" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <filter id="wobble-1">
-        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G" />
+      <!-- Subtle glow filter -->
+      <filter id="cosmic-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="4" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
       </filter>
-      <filter id="wobble-2">
-        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="G" yChannelSelector="R" />
+      <!-- Heavy glow filter for nebulas -->
+      <filter id="nebula-glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="12" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
       </filter>
-      <filter id="wobble-heavy">
-        <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" />
+      <!-- Star twinkle distortion wobble -->
+      <filter id="space-wobble">
+        <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
       </filter>
     </defs>
   </svg>
 
-  <!-- Background Decorative Grid and Floating Doodles -->
-  <div class="bg-decorations">
-    <div class="floating-doodle doodle-1">★</div>
-    <div class="floating-doodle doodle-2">☀</div>
-    <div class="floating-doodle doodle-3">▲</div>
-    <div class="floating-doodle doodle-4">✿</div>
+  <!-- Starry Background Canvas Overlay -->
+  <div class="space-background">
+    <div id="stars-layer-1"></div>
+    <div id="stars-layer-2"></div>
+    <div class="space-nebula"></div>
   </div>
 
-  <!-- Main Navigation -->
-  <header class="app-header sketch-border">
+  <!-- Main Navigation Header -->
+  <header class="app-header space-border">
     <div class="header-container">
       <a href="#" class="logo-area">
-        <span class="logo-icon">✎</span>
-        <span class="logo-text hand-drawn">DoodlePort</span>
+        <span class="logo-icon">✨</span>
+        <span class="logo-text hand-drawn">StellaPort</span>
       </a>
       
       <nav class="main-nav">
         <ul>
-          <li><a href="#hero" class="nav-link active">Home</a></li>
-          <li><a href="#studio" class="nav-link">Sketch Studio</a></li>
-          <li><a href="#gallery" class="nav-link">Gallery</a></li>
-          <li><a href="#resume" class="nav-link">Resume</a></li>
-          <li><a href="#contact" class="nav-link">Contact</a></li>
+          <li><a href="#hero" class="nav-link active">Orbit</a></li>
+          <li><a href="#forge" class="nav-link">Star Forge</a></li>
+          <li><a href="#sky" class="nav-link">Celestial Sky</a></li>
+          <li><a href="#observatory" class="nav-link">Observatory Resume</a></li>
+          <li><a href="#contact" class="nav-link">Signal</a></li>
         </ul>
       </nav>
 
       <div class="header-actions">
-        <button id="theme-toggle" class="sketch-btn icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
-          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
-          </svg>
-          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-        </button>
+        <!-- Visual details only, constellation theme is exclusively dark mode for maximum contrast -->
+        <span class="space-status hand-drawn">🔴 System: Operational</span>
       </div>
     </div>
   </header>
@@ -78,46 +79,47 @@
     <!-- Hero / Landing Section -->
     <section id="hero" class="hero-section page-section">
       <div class="hero-content">
-        <div class="badge hand-drawn sketch-border">Welcome to my sketchpad</div>
+        <div class="badge hand-drawn space-border">Stargazing Coordinates Online</div>
         <h1 class="hero-title">
-          Where <span class="highlight-text hand-drawn">Creativity</span> meets<br>
-          structured <span class="highlight-text hand-drawn">Development</span>.
+          Forge your own <span class="highlight-text hand-drawn">Constellations</span>.<br>
+          Map them in the <span class="highlight-text hand-drawn">Infinity</span>.
         </h1>
         <p class="hero-desc">
-          I'm a developer who loves to sketch ideas. Explore my portfolio represented as doodles, draw your own on my canvas, and check out my interactive resume.
+          Welcome to StellaPort. Draw stars, planets, or custom galaxies, cast them into our ever-expanding coordinate sky, and explore the orbital paths of my developer resume.
         </p>
         <div class="hero-buttons">
-          <a href="#studio" class="sketch-btn primary-btn hand-drawn">Start Doodling</a>
-          <a href="#gallery" class="sketch-btn secondary-btn hand-drawn">Explore Gallery</a>
+          <a href="#forge" class="space-btn primary-btn hand-drawn">Forge a Star</a>
+          <a href="#sky" class="space-btn secondary-btn hand-drawn">View Celestial Sky</a>
         </div>
       </div>
       
-      <!-- Interactive Hero Interactive Display -->
-      <div class="hero-showcase sketch-border">
+      <!-- Interactive Starchart Widget -->
+      <div class="hero-showcase space-border">
         <div class="showcase-header">
           <span class="dot red"></span>
           <span class="dot yellow"></span>
           <span class="dot green"></span>
-          <span class="showcase-title hand-drawn">QuickSketch.exe</span>
+          <span class="showcase-title hand-drawn">QuickForge.sys</span>
         </div>
         <div class="showcase-body">
           <canvas id="hero-mini-canvas" width="400" height="300"></canvas>
-          <div class="canvas-instruction hand-drawn">Scratch here! Draw a quick smiley face ☺</div>
-          <button id="clear-hero-canvas" class="mini-clear-btn hand-drawn">Clear</button>
+          <div class="canvas-instruction hand-drawn">Draw a star cluster above! Click to link nodes ✦</div>
+          <button id="clear-hero-canvas" class="mini-clear-btn hand-drawn">Wipe</button>
         </div>
       </div>
     </section>
 
-    <!-- Sketch Studio Section -->
-    <section id="studio" class="studio-section page-section">
+    <!-- Star Forge (Drawing Canvas) Section -->
+    <section id="forge" class="forge-section page-section">
       <div class="section-header text-center">
-        <h2 class="section-title hand-drawn">The Sketch Studio</h2>
-        <p class="section-subtitle">Unleash your imagination. Draw anything, choose your tools, and save your masterpiece to the resume gallery!</p>
+        <h2 class="section-title hand-drawn">The Star Forge</h2>
+        <p class="section-subtitle">Scribble nebulas, comets, or complex star clusters. Once forged, publish them to align with our global starry constellation map.</p>
       </div>
 
       <div class="studio-grid">
-        <!-- Canvas Board Wrapper -->
-        <div class="canvas-board sketch-border-heavy">
+        <!-- Astronomical Board Canvas -->
+        <div class="canvas-board space-border-heavy">
+          <div class="astronomical-grid-overlay"></div>
           <div class="notebook-rings">
             <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
           </div>
@@ -126,92 +128,93 @@
           </div>
         </div>
 
-        <!-- Controls Panel -->
-        <div class="controls-panel sketch-border">
-          <h3 class="panel-title hand-drawn">Drawing Toolkit</h3>
+        <!-- Forge controls -->
+        <div class="controls-panel space-border">
+          <h3 class="panel-title hand-drawn">Celestial Forge Kit</h3>
           
           <!-- Tool Options -->
           <div class="control-group">
-            <label class="control-label hand-drawn">Tool</label>
+            <label class="control-label hand-drawn">Astronomical Tool</label>
             <div class="tool-selector">
-              <button class="tool-btn active" data-tool="brush" title="Brush">
+              <button class="tool-btn active" data-tool="brush" title="Star Beam">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                  <path d="M12 17v4M9 21h6"></path>
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                 </svg>
-                <span class="tool-text hand-drawn">Brush</span>
+                <span class="tool-text hand-drawn">Star Beam</span>
               </button>
-              <button class="tool-btn" data-tool="highlighter" title="Highlighter">
+              <button class="tool-btn" data-tool="highlighter" title="Nebula Spray">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                 </svg>
-                <span class="tool-text hand-drawn">Highlight</span>
+                <span class="tool-text hand-drawn">Nebula Dust</span>
               </button>
-              <button class="tool-btn" data-tool="eraser" title="Eraser">
+              <button class="tool-btn" data-tool="eraser" title="Void Dissolver">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 20H7L3 16c-1-1-1-3 0-4l9-9c1-1 3-1 4 0l4 4c1 1 1 3 0 4L13 20"></path>
-                  <line x1="18" y1="12" x2="22" y2="16"></line>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
                 </svg>
-                <span class="tool-text hand-drawn">Eraser</span>
+                <span class="tool-text hand-drawn">Void Eraser</span>
               </button>
             </div>
+            
             <div class="shape-selector">
-              <button class="shape-btn" data-shape="free" title="Freehand">✎ Free</button>
-              <button class="shape-btn" data-shape="line" title="Line">╱ Line</button>
-              <button class="shape-btn" data-shape="rect" title="Rectangle">☐ Rect</button>
-              <button class="shape-btn" data-shape="circle" title="Circle">◯ Circle</button>
+              <button class="shape-btn" data-shape="free" title="Freehand Star">✧ Star</button>
+              <button class="shape-btn" data-shape="line" title="Star Link">╱ Link</button>
+              <button class="shape-btn" data-shape="rect" title="Solar Sector">☐ Sector</button>
+              <button class="shape-btn" data-shape="circle" title="Planet Body">◯ Planet</button>
             </div>
           </div>
 
           <!-- Color Swatches -->
           <div class="control-group">
-            <label class="control-label hand-drawn">Colors</label>
+            <label class="control-label hand-drawn">Cosmic Ink</label>
             <div class="color-palette" id="color-palette">
-              <!-- Dynamically populated in JavaScript, custom custom drawing style -->
+              <!-- Rebuilt dynamically in JS -->
             </div>
             <div class="custom-color-picker">
-              <input type="color" id="custom-color" value="#000000">
-              <label for="custom-color" class="hand-drawn">Custom Color</label>
+              <input type="color" id="custom-color" value="#ffffff">
+              <label for="custom-color" class="hand-drawn">Starlight Spectrum</label>
             </div>
           </div>
 
-          <!-- Brush Size & Opacity -->
+          <!-- Size & Opacity -->
           <div class="control-group">
             <div class="slider-label">
-              <span class="hand-drawn">Brush Size</span>
+              <span class="hand-drawn">Star Beam Width</span>
               <span id="brush-size-val" class="hand-drawn">6px</span>
             </div>
-            <input type="range" id="brush-size" min="1" max="50" value="6" class="sketch-slider">
+            <input type="range" id="brush-size" min="1" max="50" value="6" class="space-slider">
           </div>
 
           <div class="control-group">
             <div class="slider-label">
-              <span class="hand-drawn">Opacity</span>
+              <span class="hand-drawn">Gas Density</span>
               <span id="brush-opacity-val" class="hand-drawn">100%</span>
             </div>
-            <input type="range" id="brush-opacity" min="10" max="100" value="100" class="sketch-slider">
+            <input type="range" id="brush-opacity" min="10" max="100" value="100" class="space-slider">
           </div>
 
-          <!-- History / Actions -->
+          <!-- Actions -->
           <div class="control-group action-group">
-            <button id="undo-btn" class="sketch-btn secondary-btn flex-btn" title="Undo (Ctrl+Z)">
+            <button id="undo-btn" class="space-btn secondary-btn flex-btn" title="Undo (Ctrl+Z)">
               <span>↩</span> <span class="hand-drawn">Undo</span>
             </button>
-            <button id="redo-btn" class="sketch-btn secondary-btn flex-btn" title="Redo (Ctrl+Y)">
+            <button id="redo-btn" class="space-btn secondary-btn flex-btn" title="Redo (Ctrl+Y)">
               <span>↪</span> <span class="hand-drawn">Redo</span>
             </button>
-            <button id="clear-btn" class="sketch-btn danger-btn flex-btn" title="Clear Canvas">
-              <span>🗑</span> <span class="hand-drawn">Clear</span>
+            <button id="clear-btn" class="space-btn danger-btn flex-btn" title="Vanish All">
+              <span>🗑</span> <span class="hand-drawn">Wipe</span>
             </button>
           </div>
 
-          <!-- Save and Download -->
-          <div class="save-actions sketch-border-top">
-            <input type="text" id="doodle-title" class="sketch-input hand-drawn" placeholder="Name your sketch..." maxlength="25">
-            <button id="save-gallery-btn" class="sketch-btn primary-btn full-btn hand-drawn">
-              <span>✈</span> Post to Gallery
+          <!-- Save/Publish -->
+          <div class="save-actions space-border-top">
+            <input type="text" id="doodle-title" class="space-input hand-drawn" placeholder="Name your constellation..." maxlength="25">
+            <button id="save-gallery-btn" class="space-btn primary-btn full-btn hand-drawn">
+              <span>✨</span> Post to Celestial Sky
             </button>
-            <button id="download-btn" class="sketch-btn secondary-btn full-btn hand-drawn">
+            <button id="download-btn" class="space-btn secondary-btn full-btn hand-drawn">
               <span>↓</span> Save PNG
             </button>
           </div>
@@ -219,102 +222,107 @@
       </div>
     </section>
 
-    <!-- Gallery Section -->
-    <section id="gallery" class="gallery-section page-section">
+    <!-- Interactive Celestial Sky (Gallery) Section -->
+    <section id="sky" class="gallery-section page-section">
       <div class="section-header text-center">
-        <h2 class="section-title hand-drawn">The Doodle Gallery</h2>
-        <p class="section-subtitle">Browse through visual stories of my software engineering projects, sketches, and guest creations.</p>
+        <h2 class="section-title hand-drawn">The Celestial Sky</h2>
+        <p class="section-subtitle">Grab, drag, and pan around the infinite star field coordinates to inspect newly born nebulae and star clusters drawn by other explorers.</p>
       </div>
 
-      <!-- Filters & Search Toolbar -->
-      <div class="gallery-toolbar sketch-border">
+      <!-- Toolbar -->
+      <div class="gallery-toolbar space-border">
         <div class="filter-categories" id="filter-categories">
-          <button class="filter-btn active hand-drawn" data-filter="all">All Sketches</button>
-          <button class="filter-btn hand-drawn" data-filter="portfolio">My Projects</button>
-          <button class="filter-btn hand-drawn" data-filter="user">User Doodles</button>
+          <button class="filter-btn active hand-drawn" data-filter="all">All Stars</button>
+          <button class="filter-btn hand-drawn" data-filter="portfolio">Design Clusters</button>
+          <button class="filter-btn hand-drawn" data-filter="user">User Constellations</button>
         </div>
         <div class="search-box">
-          <input type="text" id="gallery-search" class="sketch-input hand-drawn" placeholder="🔍 Search sketches...">
+          <input type="text" id="gallery-search" class="space-input hand-drawn" placeholder="🔍 Search astronomical names...">
         </div>
       </div>
 
-      <!-- Gallery Grid -->
-      <div class="gallery-grid" id="gallery-grid">
-        <!-- Dynamically rendered via app.js -->
+      <!-- Viewport for Panning the Infinite Constellation Map -->
+      <div class="sky-map-viewport space-border-heavy" id="sky-map-viewport">
+        <div class="sky-instructions hand-drawn">🌌 Drag/Pan to explore the sky map &bull; Hover/Click stars to inspect</div>
+        <div class="sky-map-container" id="sky-map-container">
+          <!-- Sky grid coordinates markings -->
+          <div class="sky-grid-lines"></div>
+          <!-- Target constellations populated dynamically -->
+          <div class="constellations-layer" id="constellations-layer"></div>
+        </div>
       </div>
     </section>
 
-    <!-- Resume Section -->
-    <section id="resume" class="resume-section page-section">
+    <!-- Observatory Resume Section -->
+    <section id="observatory" class="resume-section page-section">
       <div class="section-header text-center">
-        <h2 class="section-title hand-drawn">Sketchbook Resume</h2>
-        <p class="section-subtitle">Flip through the pages of my background, technical skillsets, and professional experience.</p>
+        <h2 class="section-title hand-drawn">Observatory Resume</h2>
+        <p class="section-subtitle">Map the orbits of my skillsets and follow the constellation road of my professional development.</p>
       </div>
 
-      <!-- Resume Canvas Book -->
-      <div class="resume-book sketch-border-heavy">
+      <!-- Astronomical Notebook -->
+      <div class="resume-book space-border-heavy">
         <div class="resume-tabs">
           <button class="resume-tab active hand-drawn" data-tab="profile">
-            <span>☺</span> Profile
+            <span>🛰</span> Astronomer Profile
           </button>
           <button class="resume-tab hand-drawn" data-tab="skills">
-            <span>⚙</span> Skills
+            <span>🌀</span> Skill Orbits
           </button>
           <button class="resume-tab hand-drawn" data-tab="experience">
-            <span>☍</span> Experience
+            <span>✨</span> Experience Road
           </button>
         </div>
 
         <div class="resume-page-content" id="resume-tab-content">
-          <!-- Dynamically populated in app.js based on selection. Included structures below for reference and fallback -->
+          <!-- Populated in app.js -->
         </div>
       </div>
     </section>
 
-    <!-- Contact Section -->
+    <!-- Contact Form (Signal Sender) -->
     <section id="contact" class="contact-section page-section">
       <div class="section-header text-center">
-        <h2 class="section-title hand-drawn">Leave a Scribble</h2>
-        <p class="section-subtitle">Have a project idea or just want to connect? Send a message and let's work together!</p>
+        <h2 class="section-title hand-drawn">Transmit a Signal</h2>
+        <p class="section-subtitle">Beam an idea into outer space or send me a personal message. Let's make contact!</p>
       </div>
 
-      <div class="contact-container sketch-border">
+      <div class="contact-container space-border">
         <div class="contact-info">
-          <h3 class="hand-drawn">Let's Connect!</h3>
-          <p>If you prefer standard communication channels, feel free to use the links below or scribble your message on the notepad.</p>
+          <h3 class="hand-drawn">Establish Connection</h3>
+          <p>Standard links are provided for telemetry. Or send a coordinate message using our deep-space signal pad.</p>
           <div class="contact-links">
-            <a href="mailto:developer@example.com" class="sketch-btn secondary-btn hand-drawn flex-btn">
+            <a href="mailto:developer@example.com" class="space-btn secondary-btn hand-drawn flex-btn">
               <span>✉</span> developer@example.com
             </a>
-            <a href="https://github.com" target="_blank" class="sketch-btn secondary-btn hand-drawn flex-btn">
+            <a href="https://github.com" target="_blank" class="space-btn secondary-btn hand-drawn flex-btn">
               <span>★</span> GitHub Profile
             </a>
-            <a href="https://linkedin.com" target="_blank" class="sketch-btn secondary-btn hand-drawn flex-btn">
+            <a href="https://linkedin.com" target="_blank" class="space-btn secondary-btn hand-drawn flex-btn">
               <span>☍</span> LinkedIn Profile
             </a>
           </div>
           <div class="paper-sketch-decoration">
-            <!-- Drawn dynamically or CSS background -->
-            <div class="cup-doodle">☕</div>
-            <div class="quote-doodle hand-drawn">"Lines form ideas, ideas build software."</div>
+            <div class="cup-doodle">🛰</div>
+            <div class="quote-doodle hand-drawn">"Constellations are maps of code mapped in the sky."</div>
           </div>
         </div>
 
         <form id="contact-form" class="contact-form-pad">
           <div class="form-group">
-            <label for="contact-name" class="hand-drawn">Your Name</label>
-            <input type="text" id="contact-name" class="sketch-input hand-drawn" required placeholder="e.g. Ada Lovelace">
+            <label for="contact-name" class="hand-drawn">Transmitter Name</label>
+            <input type="text" id="contact-name" class="space-input hand-drawn" required placeholder="e.g. Nicolaus Copernicus">
           </div>
           <div class="form-group">
-            <label for="contact-email" class="hand-drawn">Your Email</label>
-            <input type="email" id="contact-email" class="sketch-input hand-drawn" required placeholder="e.g. ada@computing.com">
+            <label for="contact-email" class="hand-drawn">Return Frequencies (Email)</label>
+            <input type="email" id="contact-email" class="space-input hand-drawn" required placeholder="e.g. copernicus@heliocentric.org">
           </div>
           <div class="form-group">
-            <label for="contact-msg" class="hand-drawn">Scribble Message</label>
-            <textarea id="contact-msg" class="sketch-input hand-drawn" rows="5" required placeholder="Type your scribble here..."></textarea>
+            <label for="contact-msg" class="hand-drawn">Signal Payload (Message)</label>
+            <textarea id="contact-msg" class="space-input hand-drawn" rows="5" required placeholder="Write your cosmic message..."></textarea>
           </div>
-          <button type="submit" class="sketch-btn primary-btn hand-drawn full-btn">
-            Send Scribble ✈
+          <button type="submit" class="space-btn primary-btn hand-drawn full-btn">
+            Transmit Signal ✈
           </button>
           <div id="form-status" class="hand-drawn text-center form-status-msg"></div>
         </form>
@@ -323,38 +331,38 @@
 
   </main>
 
-  <!-- Lightbox Modal for Gallery Doodles -->
+  <!-- Lightbox Modal for Constellation Inspect -->
   <div class="lightbox-modal" id="doodle-lightbox">
     <div class="lightbox-overlay" id="lightbox-close-overlay"></div>
-    <div class="lightbox-container sketch-border">
+    <div class="lightbox-container space-border">
       <button class="close-lightbox" id="close-lightbox-btn" aria-label="Close modal">&times;</button>
       <div class="lightbox-grid">
-        <div class="lightbox-image-wrapper sketch-border">
+        <div class="lightbox-image-wrapper space-border">
           <div id="lightbox-media-container">
-            <!-- Image or SVG will be injected here -->
+            <!-- SVG / PNG loaded here -->
           </div>
         </div>
         <div class="lightbox-details">
           <div class="lightbox-header">
-            <span class="lightbox-tag hand-drawn" id="lightbox-tag">Tag</span>
-            <h3 class="lightbox-title hand-drawn" id="lightbox-title">Doodle Title</h3>
+            <span class="lightbox-tag hand-drawn" id="lightbox-tag">Cluster</span>
+            <h3 class="lightbox-title hand-drawn" id="lightbox-title">Constellation</h3>
             <div class="lightbox-meta">
-              <span id="lightbox-author">By Creator</span> &bull; <span id="lightbox-date">June 18, 2026</span>
+              <span id="lightbox-author">By Astronomer</span> &bull; <span id="lightbox-date">June 21, 2026</span>
             </div>
           </div>
           <div class="lightbox-body">
-            <p id="lightbox-description">This is a description of the doodle showcase project.</p>
+            <p id="lightbox-description">Astronomical findings.</p>
             
             <div class="tech-tags-list" id="lightbox-tech-tags">
-              <!-- Technical tags in hand-drawn bubbles -->
+              <!-- Tag lists -->
             </div>
           </div>
           <div class="lightbox-footer">
-            <a id="lightbox-download" href="#" download="doodle.png" class="sketch-btn primary-btn hand-drawn flex-btn">
-              <span>↓</span> Download Image
+            <a id="lightbox-download" href="#" download="constellation.png" class="space-btn primary-btn hand-drawn flex-btn">
+              <span>↓</span> Save Log File
             </a>
-            <button id="lightbox-like" class="sketch-btn secondary-btn hand-drawn flex-btn">
-              <span>♥</span> Like (<span id="like-count">0</span>)
+            <button id="lightbox-like" class="space-btn secondary-btn hand-drawn flex-btn">
+              <span>♥</span> Orbit Count (<span id="like-count">0</span>)
             </button>
           </div>
         </div>
@@ -367,9 +375,9 @@
 
   <!-- Footer -->
   <footer class="app-footer text-center">
-    <p class="hand-drawn">Made with ☕, ✎, and HTML5 Canvas &bull; &copy; 2026 DoodlePort</p>
+    <p class="hand-drawn">Made with 🌌, 🌟, and HTML5 Canvas &bull; &copy; 2026 StellaPort</p>
   </footer>
 
-  <!-- Scripts -->
+  <!-- Scripts -->
 </body>
 </html>
