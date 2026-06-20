@@ -331,17 +331,16 @@ a {
   font-weight: 600;
 }
 
-/* --- MAIN CONTAINER & SECTIONS --- */
 .content-container {
   width: 90%;
   max-width: 1200px;
-  margin: 2rem auto;
+  margin: 1rem auto;
   position: relative;
   z-index: 1;
 }
 
 .page-section {
-  padding: 4rem 0;
+  padding: 1rem 0 3rem 0;
   scroll-margin-top: 100px;
 }
 
