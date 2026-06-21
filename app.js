@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupGalleryToolbar();
     
     // Start typewriter title animation
-    typeSubtitle("Add a flower to our garden? ");
+    typeSubtitle("Add flowers to our garden? ");
 
     // Listen to canvas change to toggle Plant button disabled state
     const saveBtn = document.getElementById('save-gallery-btn');
@@ -59,8 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const subtitleEl = document.querySelector('.studio-subtitle');
     if (!subtitleEl) return;
     
-    if (typewriterInterval) clearInterval(typewriterInterval);
-    if (typewriterTimeout) clearTimeout(typewriterTimeout);
+    if (typewriterInterval) {
+      clearInterval(typewriterInterval);
+      typewriterInterval = null;
+    }
+    if (typewriterTimeout) {
+      clearTimeout(typewriterTimeout);
+      typewriterTimeout = null;
+    }
     
     subtitleEl.innerHTML = '';
     
@@ -100,8 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!isWhite) nonWhite++;
     }
 
-    // Flag empty, low ink, or blank sketches (less than 0.05% non-white/non-transparent pixels)
-    return nonWhite / totalPixels < 0.0005;
+    // Flag empty, low ink, or blank sketches (less than 0.3% non-white/non-transparent pixels)
+    return nonWhite / totalPixels < 0.003;
   }
 
   function findContentBounds(imageData, w, h) {
@@ -227,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
       clearBtn.addEventListener('click', () => {
         mainCanvas.clear();
         showToast('Canvas wiped clean!', 'info');
+        typeSubtitle("Add flowers to our garden? ");
       });
     }
 
@@ -254,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
           typeSubtitle("That's not a flower. Try again? ");
           
           typewriterTimeout = setTimeout(() => {
-            typeSubtitle("Add a flower to our garden? ");
+            typeSubtitle("Add flowers to our garden? ");
           }, 5000);
 
           // Re-enable save button
@@ -387,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (unsavedModal) unsavedModal.classList.remove('active');
       releaseFocus();
       document.body.style.overflow = '';
+      typeSubtitle("Add flowers to our garden? ");
     }
     
     if (openBtn) {
