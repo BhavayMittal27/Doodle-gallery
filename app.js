@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let galleryPage = 1;
   const itemsPerPage = 200;
   let totalFlowersCount = 0;
+  let typewriterInterval = null;
+  let typewriterTimeout = null;
   
   // Canvas Instantiation
   const mainCanvas = new SketchCanvas('paint-canvas');
@@ -52,8 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- TYPEWRITER SUBTITLE ANIMATION ---
-  let typewriterInterval = null;
-  let typewriterTimeout = null;
 
   function typeSubtitle(text) {
     const subtitleEl = document.querySelector('.studio-subtitle');
@@ -100,8 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!isWhite) nonWhite++;
     }
 
-    // Flag empty, low ink, or blank sketches (less than 0.3% non-white/non-transparent pixels)
-    return nonWhite / totalPixels < 0.003;
+    // Flag empty, low ink, or blank sketches (less than 0.05% non-white/non-transparent pixels)
+    return nonWhite / totalPixels < 0.0005;
   }
 
   function findContentBounds(imageData, w, h) {
@@ -240,41 +240,45 @@ document.addEventListener('DOMContentLoaded', () => {
       const saveBtn = document.getElementById('save-gallery-btn');
       const originalText = saveBtn.innerHTML;
 
-      // Extract image data to run client-side decidesFlagging check
-      const imgData = mainCanvas.ctx.getImageData(0, 0, mainCanvas.canvas.width, mainCanvas.canvas.height);
-      const flagged = decideFlagging(imgData.data);
+      try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<span>⏳</span> Planting...`;
 
-      if (flagged) {
-        // Block planting and show warning subtitle
-        showToast("That's not a flower. Try again?", "danger");
-        typeSubtitle("That's not a flower. Try again? ");
-        
-        typewriterTimeout = setTimeout(() => {
-          typeSubtitle("Add a flower to our garden? ");
-        }, 5000);
-        return;
-      }
-      
-      // Default metadata to match minimalist annasgarden.dev database records
-      const title = 'Planted Flower';
-      const author = 'Gardener';
-      const description = 'A community flower in BHAVI KA KHET.';
-      
-      // Crop, center, and get the transparent PNG image from the canvas
-      const exportCanvas = makeCenteredSquarePng(mainCanvas.canvas, 32);
-      const transparentImgData = exportCanvas.toDataURL();
-      let imageSrc = transparentImgData;
+        // Extract image data to run client-side decidesFlagging check
+        const imgData = mainCanvas.ctx.getImageData(0, 0, mainCanvas.canvas.width, mainCanvas.canvas.height);
+        const flagged = decideFlagging(imgData.data);
 
-      const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      const filename = `${Date.now()}-${randomId}.png`;
-      const path = `public/${filename}`;
-      const newId = `db-doodle-${path.replace(/\//g, '_')}`;
-
-      if (supabase) {
-        try {
-          saveBtn.disabled = true;
-          saveBtn.innerHTML = `<span>⏳</span> Planting...`;
+        if (flagged) {
+          // Block planting and show warning subtitle
+          showToast("That's not a flower. Try again?", "danger");
+          typeSubtitle("That's not a flower. Try again? ");
           
+          typewriterTimeout = setTimeout(() => {
+            typeSubtitle("Add a flower to our garden? ");
+          }, 5000);
+
+          // Re-enable save button
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
+          return;
+        }
+        
+        // Default metadata to match minimalist annasgarden.dev database records
+        const title = 'Planted Flower';
+        const author = 'Gardener';
+        const description = 'A community flower in BHAVI KA KHET.';
+        
+        // Crop, center, and get the transparent PNG image from the canvas
+        const exportCanvas = makeCenteredSquarePng(mainCanvas.canvas, 32);
+        const transparentImgData = exportCanvas.toDataURL();
+        let imageSrc = transparentImgData;
+
+        const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const filename = `${Date.now()}-${randomId}.png`;
+        const path = `public/${filename}`;
+        const newId = `db-doodle-${path.replace(/\//g, '_')}`;
+
+        if (supabase) {
           const blob = dataURLtoBlob(transparentImgData);
           
           const { error: uploadError } = await supabase.storage
@@ -296,55 +300,55 @@ document.addEventListener('DOMContentLoaded', () => {
           imageSrc = publicData.publicUrl;
           
           showToast(`Successfully planted flower!`, 'success');
-        } catch (err) {
-          console.error("Supabase plant upload failed, saving locally:", err);
-          showToast("Failed to plant online. Saved in local session.", "danger");
-        } finally {
-          saveBtn.disabled = false;
-          saveBtn.innerHTML = originalText;
+        } else {
+          showToast(`Successfully planted flower in local session!`, 'success');
         }
-      } else {
-        showToast(`Successfully planted flower in local session!`, 'success');
-      }
 
-      const newFlower = {
-        id: newId,
-        title: title,
-        category: 'user',
-        tag: 'Planted Flower',
-        date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        likes: 0,
-        author: author,
-        description: description,
-        imageSrc: imageSrc
-      };
+        const newFlower = {
+          id: newId,
+          title: title,
+          category: 'user',
+          tag: 'Planted Flower',
+          date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          likes: 0,
+          author: author,
+          description: description,
+          imageSrc: imageSrc
+        };
 
-      // Add to island list and re-render
-      flowersList.unshift(newFlower);
-      if (flowersList.length > 60) {
-        flowersList.pop(); // Keep island clean
-      }
-      renderGardenSky();
-      
-      // If the gallery overlay is active, also add to gallery list and re-render
-      const galleryOverlay = document.getElementById('gallery-archive');
-      if (galleryOverlay && galleryOverlay.classList.contains('active')) {
-        galleryFlowersList.unshift(newFlower);
-        if (galleryFlowersList.length > itemsPerPage) {
-          galleryFlowersList.pop();
+        // Add to island list and re-render
+        flowersList.unshift(newFlower);
+        if (flowersList.length > 60) {
+          flowersList.pop(); // Keep island clean
         }
-        renderGalleryGrid();
-      }
-      
-      // Reset controls
-      mainCanvas.clear();
-      saveBtn.disabled = true;
+        renderGardenSky();
+        
+        // If the gallery overlay is active, also add to gallery list and re-render
+        const galleryOverlay = document.getElementById('gallery-archive');
+        if (galleryOverlay && galleryOverlay.classList.contains('active')) {
+          galleryFlowersList.unshift(newFlower);
+          if (galleryFlowersList.length > itemsPerPage) {
+            galleryFlowersList.pop();
+          }
+          renderGalleryGrid();
+        }
+        
+        // Reset controls
+        mainCanvas.clear();
+        saveBtn.disabled = true;
 
-      // Close mobile drawer if active
-      const drawer = document.getElementById('forge-panel');
-      if (drawer) {
-        drawer.classList.remove('active');
-        document.body.style.overflow = '';
+        // Close mobile drawer if active
+        const drawer = document.getElementById('forge-panel');
+        if (drawer) {
+          drawer.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+
+      } catch (err) {
+        console.error("Planting flow failed:", err);
+        showToast("Failed to plant flower. Please try again.", "danger");
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
       }
     });
   }
